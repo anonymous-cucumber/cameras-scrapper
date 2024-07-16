@@ -25,7 +25,7 @@ const {fileExists} = require("./libs/fsUtils");
         const [key,check] = arrayArgs[i];
         const {success, msg, data, params: newParams} = await check(process.argv[3+i],params);
         if (!success) {
-            throw new Error(msg+"\nExample => "+example())
+            throw new Error(msg+"\n\nExample => "+example())
         }
         if (newParams) {
             params = newParams;

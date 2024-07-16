@@ -1,7 +1,6 @@
 const fs = require("fs/promises");
 const lazyReadCsv = require("../libs/lazyReadCsv");
 const Camera = require("../models/Camera");
-const getCameraType = require("../libs/getCameraType");
 const {destinationPointLat, destinationPointLon} = require("../libs/convert");
 const {fileExists} = require("../libs/fsUtils");
 const {question} = require("../libs/ui");
@@ -82,7 +81,10 @@ function getArgs() {
                 
             const files = await fs.readdir(path).then(files =>
                 files.filter(filename => {
-                    const [fileSource,filestrDate] = filename.split(".")[0].split("_");
+                    const splittedFilename = filename.split(".csv")[0].split("_");
+                    const fileSource = splittedFilename[0];
+                    const filestrDate = splittedFilename[splittedFilename.length-1];
+
                     if (!sources.includes(fileSource))
                         return false;
                     if (strDate === undefined)
@@ -109,13 +111,40 @@ function example() {
 
 const infosFieldsBySource = {
     parisPoliceArcgis: (infos) => ({
-        adresse: infos.adresse,
-        code_postal: infos.code_postal,
-        op_type: "public",
+        parisPoliceArcgis: {
+            adresse: infos.adresse,
+            code_postal: infos.code_postal
+        },
+        type: "public",
         zone: "paris"
     }),
-    sousSurveillanceNet: ["zone","apparence","direction","angle","op_type"],
-    camerci: (infos) => ({camerci_desc: infos, op_type: "public"})
+    sousSurveillanceNet: (infos) => ({
+        sousSurveillanceNet: {
+            zone: infos.zone,
+            apparence: infos.apparence,
+            direction: infos.direction,
+            angle: infos.angle,
+            op_type: infos.op_type
+        },
+        type: infos.op_type,
+        zone: infos.zone
+    }),
+    camerci: (infos) => ({
+        camerci: {
+            desc: infos
+        },
+        type: "public"
+    }),
+    surveillanceUnderSurveillance: (infos) => ({
+        surveillanceUnderSurveillance: {
+            description: infos.description,
+            camera_direction: infos["camera:direction"] ? parseInt(infos["camera:direction"]) : undefined,
+            camera_mount: infos["camera:mount"],
+            camera_type: infos["camera:type"],
+            surveillance: infos.surveillance
+        },
+        type: infos.surveillance === "public" ? "public" : "private"
+    })
 };
 
 async function execute({files,sources}) {    
@@ -141,7 +170,7 @@ async function execute({files,sources}) {
             if ((i+1)%Math.floor(nbLines/100) === 0) {
                 console.log(`${i+1}/${nbLines} (${Math.round((i+1)/(nbLines)*100)}%)`)
             }
-            const source = file.split(".csv")[0].split("_").slice(0,-1).join("_")
+            const source = file.split("_")[0]
             const [lat,lon,infos] = [parseFloat(obj.lat),parseFloat(obj.lon),JSON.parse(obj.infos)];
             
             if ((await Camera.findOne({coordinates_source: source, lat, lon})) !== null)
@@ -151,11 +180,13 @@ async function execute({files,sources}) {
             const minLon = destinationPointLon(lat,lon,false, radius);
             const maxLon = destinationPointLon(lat,lon,true, radius);
 
+            const computedInfos = infosFieldsBySource[source](infos)
+
             const nearCamera = await Camera.findOne({
                 lat: {$gte: minLat, $lte: maxLat},
                 lon: {$gte: minLon, $lte: maxLon},
                 coordinates_source: {$ne: source},
-                "infos.op_type": getCameraType({infos})
+                "infos.type": computedInfos.type
             });
 
             if (nearCamera !== null) {
@@ -169,12 +200,7 @@ async function execute({files,sources}) {
                 nearCamera.coordinates_source = coordinatesSource;
                 nearCamera.lat = coordinatesToKeep.lat;
                 nearCamera.lon = coordinatesToKeep.lon;
-                nearCamera.infos = typeof(infosFieldsBySource[source]) === "function" ?
-                                    {...nearCamera.infos, ...infosFieldsBySource[source](infos)} :
-                                    infosFieldsBySource[source].reduce((acc,col) => ({
-                                        ...acc,
-                                        [col]: infos[col]
-                                    }), nearCamera.infos);
+                nearCamera.infos = {...nearCamera.infos, ...computedInfos};
                 nearCamera.infos_sources.push(source);
                 
                 await nearCamera.save();
@@ -185,12 +211,7 @@ async function execute({files,sources}) {
                 coordinates_source: source,
                 infos_sources: [source],
                 lat, lon,
-                infos: typeof(infosFieldsBySource[source]) === "function" ?
-                        infosFieldsBySource[source](infos) :
-                        infosFieldsBySource[source].reduce((acc,col) => ({
-                            ...acc,
-                            [col]: infos[col]
-                        }), {})
+                infos: computedInfos
             })
             return {createds: {...createds, [source]: (createds[source]??0) + 1}, aggregateds};
         }, ";", acc)

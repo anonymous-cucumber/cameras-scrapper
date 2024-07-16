@@ -8,7 +8,7 @@ async function promiseConcurrency(promises, concurrency, betweenCallback = null)
     let res = [];
     for (let i=0;i<lists.length;i++) {
         const promises = lists[i];
-        res = res.concat(await Promise.all(promises));
+        res = res.concat(await Promise.all(promises.map(promise => promise())));
         if (betweenCallback !== null) betweenCallback(i+1,lists.length);
     }
     return res;
