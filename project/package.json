@@ -1,0 +1,19 @@
+{
+  "name": "camera_scrapper",
+  "version": "1.0.0",
+  "description": "This is a project to scrap, aggregate, and distribute a map with all scrapped existing cameras",
+  "main": "console.js",
+  "scripts": {
+    "start": "node console.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://code.organise.earth/julien/cameras-scrapper.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mongoose": "^8.2.4"
+  }
+}

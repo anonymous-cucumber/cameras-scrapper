@@ -1,0 +1,39 @@
+version: '3'
+services:
+  project:
+    build: ./docker/project
+    #restart: always
+    volumes:
+      - ./project:/project
+    working_dir: /project
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
+    networks:
+      - db
+      - exterior
+
+  mongodb:
+    image: mongo:bionic
+    volumes:
+      - ./mongodb/mongod.conf:/etc/mongod.conf
+      - ./mongodb/data/db/:/data/db/
+      - ./mongodb/data/log/:/var/log/mongodb/
+      - ./mongodb/initdb.d/:/docker-entrypoint-initdb.d/
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    ports:
+      - "27017:27017"
+    networks:
+      - db
+
+networks:
+  db:
+    internal: true
+  exterior:
+    internal: false
