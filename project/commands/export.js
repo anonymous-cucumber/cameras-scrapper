@@ -1,8 +1,6 @@
 const fs = require("fs/promises");
 const {fileExists} = require("../libs/fsUtils");
 
-const getCsvFilePath = (scrapper,n) => __dirname+"/../CSVs/"+scrapper+(n > 1 ? "_"+n : "")+".csv";
-
 function getArgs() {
     return {
         scrapper: async (scrapper) => {
@@ -21,10 +19,6 @@ function example() {
 const cols = ["lat","lon",["infos",v => v ? JSON.stringify(v).replace(/;/g,",") : ""]];
 
 async function execute({scrapper}) {
-    let n = 1;
-    while (await fileExists(getCsvFilePath(scrapper,n))) {
-        n += 1;
-    }
 
     const lines = await require(__dirname+"/../scrappers/"+scrapper+".js")();
 
@@ -37,7 +31,7 @@ async function execute({scrapper}) {
         }).join(";")    
     ).join("\n");
 
-    await fs.writeFile(getCsvFilePath(scrapper,n), csv);
+    await fs.writeFile(`${__dirname}/../CSVs/${scrapper}_${new Date().toISOString()}.csv`, csv);
 
     console.log("csv file for '"+scrapper+"' has been succesfully scrapped !")
 }

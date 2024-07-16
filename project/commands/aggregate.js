@@ -102,8 +102,8 @@ function getArgs() {
 function example() {
     return "\nnode console.js aggregate"+
             "\nnode console.js aggregate camerci,parisPoliseArcgis"+
-            "\nnode console.js aggregate camerci,parisPoliseArcgis 2"+
-            "\nnode console.js aggregate all 2";
+            "\nnode console.js aggregate camerci,parisPoliseArcgis 2024-04-03T12:34:54"+
+            "\nnode console.js aggregate all 2024-04";
 }
 
 const infosFieldsBySource = {
