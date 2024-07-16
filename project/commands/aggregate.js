@@ -11,32 +11,54 @@ const scrappersPath = __dirname+"/../scrappers/"
 
 function getArgs() {
     return {
-        sources: async sources => {
-            if ([undefined,"all"].includes(sources))
-                return {success: true, data: sources}
-            return {success: true, data: sources.split(",")}
-        },
-        num: async (num,{sources}) => {
-            const files = (![undefined,"all"].includes(sources) ? 
-                                sources : 
-                                await fs.readdir(scrappersPath)
+        sources: async givenSources => {
+            if ([undefined,"all"].includes(givenSources)) {
+                const sources = await fs.readdir(scrappersPath)
                                     .then(files => 
                                         files
                                             .filter(file => file !== ".keep")
                                             .map(file => file.replace(".js",""))
-                                    )).map(source => source+(num > 1 ? "_"+num : "")+".csv")
-            
-            for (let i=0;i<files.length;i++) {
-                const file = files[i];
-                if (await fileExists(path+file))
-                    continue;
-                if ([undefined,"all"].includes(sources)) {
-                    files.splice(i,1);
-                    i--;
-                    continue;
-                }
-                return {success: false, msg: `The file ${file} does not exist`}
+                                    )
+                return {success: true, data: sources}
             }
+            const sources = givenSources.split(",");
+            for (const source of sources) {
+                if (!(await fileExists(scrappersPath+source+".js")))
+                    return {success: false, msg: `The source ${source} does not exist`};
+            }
+
+            return {success: true, data: sources};
+        },
+        date: async (strDate,{sources}) => {
+            
+            const files = await fs.readdir(scrappersPath).then(files =>
+                files.filter(filename => {
+                    const [fileSource,filestrDate] = filename.split(".")[0].split("_");
+                    if (!sources.includes(fileSource))
+                        return false;
+                    if (["all",undefined].includes(strDate))
+                        return true;
+
+                    const fileDate = new Date(filestrDate);
+                    const date = new Date(strDate);
+
+                    if (fileDate.getTime() < date.getTime())
+                        return false;
+                    
+                })    
+            )
+            
+            // for (let i=0;i<files.length;i++) {
+            //     const file = files[i];
+            //     if (await fileExists(path+file))
+            //         continue;
+            //     if ([undefined,"all"].includes(sources)) {
+            //         files.splice(i,1);
+            //         i--;
+            //         continue;
+            //     }
+            //     return {success: false, msg: `The file ${file} does not exist`}
+            // }
 
             return {success: true, params: {files}};
         }
