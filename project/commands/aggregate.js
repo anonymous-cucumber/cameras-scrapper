@@ -42,9 +42,13 @@ function getArgs() {
         },
         date: async (strDate,params) => {
             const {sources} = params;
-            let regex = "";
-            let inputUnits = null;
+            
+            let date = null;
+            let dateB = null;
             if (strDate) {
+                let regex = "";
+                let inputUnits = null;
+
                 for (const [,,del,reg] of dateUnits) {
                     regex += `${del && "\\"+del}${reg}`;
                     const match = strDate.match(`^${regex}$`);
@@ -53,13 +57,29 @@ function getArgs() {
                         break;
                     }
                 }
-            }
-            if (strDate && inputUnits === null)
-                return {success: false, msg: `"${strDate}" is not a valid date`}
+                if (inputUnits === null)
+                    return {success: false, msg: `"${strDate}" is not a valid date`}
 
-            const date = strDate && new Date(dateUnits.reduce((acc,[,,del,,defaultValue],i) =>
-                acc+del+(inputUnits[i] ?? defaultValue)
-            , ""))
+                date = new Date(dateUnits.reduce((acc,[,,del,,defaultValue],i) =>
+                    acc+del+(inputUnits[i] ?? defaultValue)
+                , ""))
+                dateB = new Date(date.getTime());
+
+                for (let i=dateUnits.length-1;i>=0;i--) {
+                    const [getter,setter] = dateUnits[i];
+                    if (getter === null || setter === null)
+                        continue;
+                    if (inputUnits[i] === undefined)
+                        continue;
+    
+                    const getUnit = typeof(getter) === "string" ? (d => d[getter]()) : getter;
+                    const setUnit = typeof(setter) === "string" ? ((d,n) => d[setter](n)) : setter;
+    
+                    setUnit(dateB, getUnit(dateB)+1);
+                    break;
+                }
+            }
+                
             const files = await fs.readdir(path).then(files =>
                 files.filter(filename => {
                     const [fileSource,filestrDate] = filename.split(".")[0].split("_");
@@ -70,26 +90,7 @@ function getArgs() {
 
                     const fileDate = new Date(filestrDate);
 
-                    if (fileDate.getTime() < date.getTime())
-                        return false;
-
-                    for (let i=dateUnits.length-1;i>=0;i--) {
-                        const [getter,setter] = dateUnits[i];
-                        if (getter === null || setter === null)
-                            continue;
-                        if (inputUnits[i] === undefined)
-                            continue;
-
-                        const getUnit = typeof(getter) === "string" ? (d => d[getter]()) : getter;
-                        const setUnit = typeof(setter) === "string" ? ((d,n) => d[setter](n)) : setter;
-
-                        const dateB = new Date(date.getTime());
-                        setUnit(dateB, getUnit(dateB)+1);
-                        dateB.setMilliseconds(dateB.getMilliseconds()-1)
-                        return (fileDate.getTime() <= dateB.getTime())
-                    }
-
-                    return true;
+                    return fileDate.getTime() >= date.getTime() && fileDate.getTime() < dateB.getTime()
                 })    
             )
             if (files.length === 0)

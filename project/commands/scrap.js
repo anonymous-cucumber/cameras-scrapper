@@ -13,7 +13,7 @@ function getArgs() {
 }
 
 function example() {
-    return "node console.js export parisPoliceArcgis";
+    return "node console.js scrap parisPoliceArcgis";
 }
 
 const cols = ["lat","lon",["infos",v => v ? JSON.stringify(v).replace(/;/g,",") : ""]];
