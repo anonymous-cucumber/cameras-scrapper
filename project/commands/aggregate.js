@@ -7,25 +7,47 @@ const {fileExists} = require("../libs/fsUtils");
 
 const radius = 10; // 10 metters;
 const path = __dirname+"/../CSVs/";
+const scrappersPath = __dirname+"/../scrappers/"
 
 function getArgs() {
     return {
         sources: async sources => {
-            if (sources === undefined)
-                return {success: true}
-            sources = sources.split(",");
-            for (const source of sources) {
-                if (!(await fileExists(path+source+".csv"))) {
-                    return {success: false, msg: `The file ${source}.csv does not exist`}
+            if ([undefined,"all"].includes(sources))
+                return {success: true, data: sources}
+            return {success: true, data: sources.split(",")}
+        },
+        num: async (num,{sources}) => {
+            const files = (![undefined,"all"].includes(sources) ? 
+                                sources : 
+                                await fs.readdir(scrappersPath)
+                                    .then(files => 
+                                        files
+                                            .filter(file => file !== ".keep")
+                                            .map(file => file.replace(".js",""))
+                                    )).map(source => source+(num > 1 ? "_"+num : "")+".csv")
+            
+            for (let i=0;i<files.length;i++) {
+                const file = files[i];
+                if (await fileExists(path+file))
+                    continue;
+                if ([undefined,"all"].includes(sources)) {
+                    files.splice(i,1);
+                    i--;
+                    continue;
                 }
+                return {success: false, msg: `The file ${file} does not exist`}
             }
-            return {success: true, data: sources}
+
+            return {success: true, params: {files}};
         }
     }
 }
 
 function example() {
-    return "node console.js aggregate camerci,parisPoliseArcgis\nnode console.js aggregate";
+    return "\nnode console.js aggregate"+
+            "\nnode console.js aggregate camerci,parisPoliseArcgis"+
+            "\nnode console.js aggregate camerci,parisPoliseArcgis 2"+
+            "\nnode console.js aggregate all 2";
 }
 
 const infosFieldsBySource = {
@@ -39,26 +61,26 @@ const infosFieldsBySource = {
     camerci: (infos) => ({camerci_desc: infos, op_type: "public"})
 };
 
-async function execute({sources}) {
-    const files = sources ? sources.map(source => source+".csv") : await fs.readdir(path).then(files => files.filter(file => file !== ".keep"));
-    
+async function execute({files}) {    
     console.log("\nCSVs files to aggregate :");
     console.log(files.map(file => "\t"+file).join("\n"));
+    
+    let acc = {createds: {}, aggregateds: {}};
 
     for (const file of files) {
         console.log("Importing "+file+" ...")
         const nbLines = await lazyReadCsv(path+file, async (_acc,_obj,i) => {
             return i+1;
         })
-        await lazyReadCsv(path+file, async (_,obj,i) => {
+        acc = await lazyReadCsv(path+file, async ({createds, aggregateds},obj,i) => {
             if ((i+1)%Math.floor(nbLines/100) === 0) {
                 console.log(`${i+1}/${nbLines} (${Math.round((i+1)/(nbLines)*100)}%)`)
             }
-            const source = file.split(".csv")[0]
+            const source = file.split(".csv")[0].split("_").slice(0,-1).join("_")
             const [lat,lon,infos] = [parseFloat(obj.lat),parseFloat(obj.lon),JSON.parse(obj.infos)];
             
             if ((await Camera.findOne({coordinates_source: source, lat, lon})) !== null)
-                return;
+                return {createds, aggregateds};
             const minLat = destinationPointLat(lat, true, radius);
             const maxLat = destinationPointLat(lat, false, radius);
             const minLon = destinationPointLon(lat,lon,false, radius);
@@ -73,7 +95,7 @@ async function execute({sources}) {
 
             if (nearCamera !== null) {
                 if (nearCamera.infos_sources.includes(source))
-                    return;
+                    return {createds, aggregateds};
                 
                 const [coordinatesToKeep,coordinatesSource] = nearCamera.coordinates_source !== "sousSurveillanceNet" ?
                                                 [{lat: nearCamera.lat, lon: nearCamera.lon},nearCamera.coordinates_source] :
@@ -91,7 +113,7 @@ async function execute({sources}) {
                 nearCamera.infos_sources.push(source);
                 
                 await nearCamera.save();
-                return;
+                return {createds, aggregateds: {...aggregateds, [source]: (aggregateds[source]??0) + 1}};
             }
             
             await Camera.create({
@@ -105,8 +127,11 @@ async function execute({sources}) {
                             [col]: infos[col]
                         }), {})
             })
-        })
+            return {createds: {...createds, [source]: (createds[source]??0) + 1}, aggregateds};
+        }, ";", acc)
     }
+
+    console.log(acc);
 }
 
 module.exports = {getArgs,example,execute}

@@ -17,15 +17,19 @@ const {fileExists} = require("./libs/fsUtils");
 
     const arrayArgs = Object.entries(args);
 
-    const params = {};
+    let params = {};
 
     for (let i=0;i<arrayArgs.length;i++) {
         const [key,check] = arrayArgs[i];
-        const {success, msg, data} = await check(process.argv[3+i]);
+        const {success, msg, data, params: newParams} = await check(process.argv[3+i],params);
         if (!success) {
             throw new Error(msg+"\nExample => "+example())
         }
-        params[key] = data??process.argv[3+i];
+        if (newParams) {
+            params = newParams;
+        } else {
+            params[key] = data??process.argv[3+i];
+        }
     }
 
     await execute(params);
