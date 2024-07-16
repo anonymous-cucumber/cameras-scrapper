@@ -8,11 +8,11 @@ This project is a scrapper, to store and aggregate all camera informations we ca
 ## Execute commandes
 
 You can execute commands with the console.js like this:  
-  node console.js <action> <param1> <param2>
+  node console.js [action] [param1] [param2]
 
 ## How to scrap datas
 
-To scrap datas, you have to execute 'export' command, with the scrapper has argument :
+To scrap datas, you have to execute 'export' command, with the scrapper has argument :  
   node console.js export camerci|parisPoliceArcgis|sousSourveillanceNet
 
 Then, a CSV file will be created in the CSVs/ folder.
