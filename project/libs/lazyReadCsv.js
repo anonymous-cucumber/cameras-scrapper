@@ -1,6 +1,6 @@
 const {createReadStream} = require("fs");
 
-function lazyReadCsv(path, callback, delimiter = ";") {
+function lazyReadCsv(path, callback, delimiter = ";", acc = null) {
     return new Promise((resolve,reject) => {
         const readableStream = createReadStream(path, 'utf8');
 
@@ -8,6 +8,7 @@ function lazyReadCsv(path, callback, delimiter = ";") {
             reject(error)
         });
 
+        let indexLine = 0;
         let linesToBrowse = [];
         let restData = null;
         let header = null;
@@ -20,7 +21,7 @@ function lazyReadCsv(path, callback, delimiter = ";") {
                 browsing = true;
             if (linesToBrowse.length === 0) {
                 if (closed)
-                    resolve();
+                    resolve(acc);
                 browsing = false;
                 return;
             }
@@ -29,12 +30,12 @@ function lazyReadCsv(path, callback, delimiter = ";") {
                 ...acc,
                 [header[i]]: value
             }), {})
-            await callback(obj);
+            acc = await callback(acc,obj,indexLine);
+            indexLine += 1;
             await browseLines();
         }
     
         readableStream.on('data', (chunk) => {
-            console.log("on data")
             const lines = ((restData??"") + chunk.toString()).split("\n")
             if (header === null) {
                 header = lines.shift().split(delimiter)
@@ -54,7 +55,7 @@ function lazyReadCsv(path, callback, delimiter = ";") {
                 if (!browsing)
                     browseLines()
             } else if (!browsing) {
-                resolve();
+                resolve(acc);
             }
         });
     })
