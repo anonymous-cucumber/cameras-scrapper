@@ -27,4 +27,4 @@ async function scrapper() {
     ).reduce((acc,lines) => acc.concat(lines), [])
 }
 
-module.exports = scrapper;
+module.exports = {scrapper};

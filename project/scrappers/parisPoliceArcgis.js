@@ -4,4 +4,4 @@ function scrapper() {
     return scrapArcgis("https://arcg.is/08y0y10")
 }
 
-module.exports = scrapper;
+module.exports = {scrapper};

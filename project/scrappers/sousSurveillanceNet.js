@@ -11,4 +11,4 @@ async function scrapper() {
     }))
 }
 
-module.exports = scrapper;
+module.exports = {scrapper};
