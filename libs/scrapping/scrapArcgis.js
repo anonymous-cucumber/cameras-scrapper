@@ -16,7 +16,7 @@ function getDataItem(viewerHost, id) {
         .then(res => JSON.parse(res))
 }
 
-async function scrapArcgis(url, getDescription) {
+async function scrapArcgis(url) {
     const viewerUrl = url.split("/")[2] === "arcg.is" ?
         await request(url, {getHeaders: true}).then(({headers: {location}}) => location) :
         url
@@ -35,7 +35,7 @@ async function scrapArcgis(url, getDescription) {
     return layers.reduce((acc,layer) => 
         acc.concat(
                 layer.features.map(feature => ({
-                    description: getDescription(feature),
+                    infos: feature.attributes,
                     ...wgs84WebMercatorToWgs84LatLon(feature.geometry.x,feature.geometry.y)
                 }))
         ), 

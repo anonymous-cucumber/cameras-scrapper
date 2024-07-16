@@ -5,8 +5,7 @@ const url = "https://www.sous-surveillance.net/spip.php?page=cameras&format=json
 async function scrapper() {
     const res = await request(url).then(res => JSON.parse(res));
     return res.features.map(({properties, geometry}) => ({
-        properties,
-        description: properties.id_camera+" - "+properties.zone,
+        infos: properties,
         lat: geometry.coordinates[1],
         lon: geometry.coordinates[0]
     }))

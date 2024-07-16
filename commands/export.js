@@ -18,7 +18,7 @@ function example() {
     return "node console.js export parisPoliceArcgis";
 }
 
-const cols = ["lat","lon","description",["properties",v => v ? "`"+JSON.stringify(v)+"`" : ""]];
+const cols = ["lat","lon",["infos",v => v ? "`"+JSON.stringify(v)+"`" : ""]];
 
 async function execute({scrapper}) {
     let n = 1;

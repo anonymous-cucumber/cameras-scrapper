@@ -13,15 +13,15 @@ async function scrapper() {
         request(dataUrl+line.split(",")[0]+".csv", {headers})
     ))
     
-    return csvs.map(csv =>
+    return csvs.map((csv) =>
         csv.split("\n").slice(1).map(line => {
-            line = line.split(",");
-            if (line.some(v => v === ""))
+            const splittedLine = line.split(",");
+            if (splittedLine.length !== 3 || splittedLine.some(v => v === ""))
                 return null
             return {
-                lat: parseFloat(line[1]),
-                lon: parseFloat(line[0]),
-                description: line[2]
+                lat: parseFloat(splittedLine[1]),
+                lon: parseFloat(splittedLine[0]),
+                infos: (splittedLine[2]??"").replace(/\r|\n/g, "")
             }
         })
     ).reduce((acc,lines) => acc.concat(lines), [])
