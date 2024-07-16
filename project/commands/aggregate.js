@@ -4,20 +4,13 @@ const Camera = require("../models/Camera");
 const {destinationPointLat, destinationPointLon} = require("../libs/convert");
 const {fileExists} = require("../libs/fsUtils");
 const {question} = require("../libs/ui");
+const {deductDateRange} = require("../libs/datetimeMatching");
 
-const radius = 10; // 10 metters;
+const publicRadius = 10; // 10 metters;
+const privateRadius = 3; // 3 metters;
+
 const path = __dirname+"/../CSVs/";
 const scrappersPath = __dirname+"/../scrappers/";
-
-const dateUnits = [
-    ["getFullYear", "setFullYear", "", "([0-9]{4})","1970"],
-    [(d) => d.getMonth()+1, (d,n) => d.setMonth(n-1), "-", "([0-9]{2})","01"],
-    ["getDate", "setDate", "-", "([0-9]{2})","01"],
-    ["getHours", "setHours", "T", "([0-9]{2})","00"],
-    ["getMinutes", "setMinutes", ":", "([0-9]{2})","00"],
-    ["getSeconds", "setSeconds", ":", "([0-9]{2})","00"],
-    [null, null, ".", "([0-9]{3})Z?","000"]
-]
 
 function getArgs() {
     return {
@@ -39,55 +32,39 @@ function getArgs() {
 
             return {success: true, data: sources};
         },
-        date: async (strDate,params) => {
+        date: (strDate,params) => {
             const {sources} = params;
             
-            let date = null;
-            let dateB = null;
-            if (strDate) {
-                let regex = "";
-                let inputUnits = null;
+            if (strDate === "all")
+                strDate = undefined;
 
-                for (const [,,del,reg] of dateUnits) {
-                    regex += `${del && "\\"+del}${reg}`;
-                    const match = strDate.match(`^${regex}$`);
-                    if (match !== null) {
-                        inputUnits = match.slice(1)
-                        break;
-                    }
-                }
-                if (inputUnits === null)
-                    return {success: false, msg: `"${strDate}" is not a valid date`}
+            const dateRange = strDate ? deductDateRange(strDate) : [null,null];
 
-                date = new Date(dateUnits.reduce((acc,[,,del,,defaultValue],i) =>
-                    acc+del+(inputUnits[i] ?? defaultValue)
-                , ""))
-                dateB = new Date(date.getTime());
+            if (strDate && dateRange === null)
+                return {success: false, msg: `"${strDate}" is not a valid date`};
 
-                for (let i=dateUnits.length-1;i>=0;i--) {
-                    const [getter,setter] = dateUnits[i];
-                    if (getter === null || setter === null)
-                        continue;
-                    if (inputUnits[i] === undefined)
-                        continue;
-    
-                    const getUnit = typeof(getter) === "string" ? (d => d[getter]()) : getter;
-                    const setUnit = typeof(setter) === "string" ? ((d,n) => d[setter](n)) : setter;
-    
-                    setUnit(dateB, getUnit(dateB)+1);
-                    break;
-                }
-            }
-                
+            return {success: true, params: {...params, dateRange}}
+        },
+        additionalParams: async (additionalParams,params) => {
+            const {sources, dateRange: [date, dateB]} = params;
+
             const files = await fs.readdir(path).then(files =>
                 files.filter(filename => {
                     const splittedFilename = filename.split(".csv")[0].split("_");
                     const fileSource = splittedFilename[0];
                     const filestrDate = splittedFilename[splittedFilename.length-1];
+                    const fileAdditionalParams = splittedFilename.length === 3 ? splittedFilename[1] : undefined;
 
                     if (!sources.includes(fileSource))
                         return false;
-                    if (strDate === undefined)
+
+                    if (
+                        (additionalParams && additionalParams !== "nothing" && additionalParams !== fileAdditionalParams) || 
+                        (additionalParams === "nothing" && fileAdditionalParams)
+                    )
+                        return false;
+
+                    if (date === null)
                         return true;
 
                     const fileDate = new Date(filestrDate);
@@ -106,7 +83,9 @@ function example() {
     return "\nnode console.js aggregate"+
             "\nnode console.js aggregate camerci,parisPoliseArcgis"+
             "\nnode console.js aggregate camerci,parisPoliseArcgis 2024-04-03T12:34:54"+
-            "\nnode console.js aggregate all 2024-04";
+            "\nnode console.js aggregate all 2024-04"+
+            "\nnode console.js aggregate surveillanceUnderSurveillance all paris"+
+            "\nnode console.js aggregate all all nothing";
 }
 
 const infosFieldsBySource = {
@@ -135,16 +114,19 @@ const infosFieldsBySource = {
         },
         type: "public"
     }),
-    surveillanceUnderSurveillance: (infos) => ({
-        surveillanceUnderSurveillance: {
-            description: infos.description,
-            camera_direction: infos["camera:direction"] ? parseInt(infos["camera:direction"]) : undefined,
-            camera_mount: infos["camera:mount"],
-            camera_type: infos["camera:type"],
-            surveillance: infos.surveillance
-        },
-        type: infos.surveillance === "public" ? "public" : "private"
-    })
+    surveillanceUnderSurveillance: (infos) => {
+        const camera_direction = parseInt(infos["camera:direction"]);
+        return {
+            surveillanceUnderSurveillance: {
+                description: infos.description,
+                camera_direction: isNaN(camera_direction) ? undefined : camera_direction,
+                camera_mount: infos["camera:mount"],
+                camera_type: infos["camera:type"],
+                surveillance: infos.surveillance
+            },
+            type: infos.surveillance === "public" ? "public" : "private"
+        }
+    }
 };
 
 async function execute({files,sources}) {    
@@ -175,12 +157,15 @@ async function execute({files,sources}) {
             
             if ((await Camera.findOne({coordinates_source: source, lat, lon})) !== null)
                 return {createds, aggregateds};
+
+            const computedInfos = infosFieldsBySource[source](infos)
+
+            const radius = computedInfos.type === "public" ? publicRadius : privateRadius
+
             const minLat = destinationPointLat(lat, true, radius);
             const maxLat = destinationPointLat(lat, false, radius);
             const minLon = destinationPointLon(lat,lon,false, radius);
             const maxLon = destinationPointLon(lat,lon,true, radius);
-
-            const computedInfos = infosFieldsBySource[source](infos)
 
             const nearCamera = await Camera.findOne({
                 lat: {$gte: minLat, $lte: maxLat},
@@ -193,7 +178,7 @@ async function execute({files,sources}) {
                 if (nearCamera.infos_sources.includes(source))
                     return {createds, aggregateds};
                 
-                const [coordinatesToKeep,coordinatesSource] = nearCamera.coordinates_source !== "sousSurveillanceNet" ?
+                const [coordinatesToKeep,coordinatesSource] = (computedInfos.type === "public" && ["camerci","parisPoliceArcgis"].includes(nearCamera.coordinates_source)) ?
                                                 [{lat: nearCamera.lat, lon: nearCamera.lon},nearCamera.coordinates_source] :
                                                 [{lat, lon},source]
                 
