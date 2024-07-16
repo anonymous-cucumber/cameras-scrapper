@@ -1,6 +1,8 @@
 const {fileExists} = require("./libs/fsUtils");
 
 (async() => {
+    process.dontLog = true;
+
     const [,,action] = process.argv;
 
     if (action === undefined) {

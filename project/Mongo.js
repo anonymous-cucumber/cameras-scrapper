@@ -8,10 +8,10 @@ let database;
 const connect = () => {
 
     if (nbRetry >= nbRetryMax) {
-        console.log("Connexion impossible");
+        if (!process.dontLog) console.log("Connexion impossible");
         return;
     } else if (nbRetry > 0) {
-        console.log("Re try to connect")
+        if (!process.dontLog) console.log("Re try to connect")
     }
 
     if (database) return database;
@@ -25,11 +25,11 @@ const connect = () => {
     database = mongoose;
 
     database.connection.once("open", () => {
-        console.log("Connected to database");
+        if (!process.dontLog) console.log("Connected to database");
     });
 
     database.connection.on("error", () => {
-        console.log("Error connecting to database");
+        if (!process.dontLog) console.log("Error connecting to database");
         database = undefined;
         nbRetry += 1;
         setTimeout(connect, 250);

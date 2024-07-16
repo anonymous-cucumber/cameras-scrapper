@@ -4,10 +4,21 @@ const Camera = require("../models/Camera");
 const getCameraType = require("../libs/getCameraType");
 const {destinationPointLat, destinationPointLon} = require("../libs/convert");
 const {fileExists} = require("../libs/fsUtils");
+const {question} = require("../libs/ui");
 
 const radius = 10; // 10 metters;
 const path = __dirname+"/../CSVs/";
-const scrappersPath = __dirname+"/../scrappers/"
+const scrappersPath = __dirname+"/../scrappers/";
+
+const dateUnits = [
+    ["getFullYear", "setFullYear", "", "([0-9]{4})","1970"],
+    [(d) => d.getMonth()+1, (d,n) => d.setMonth(n-1), "-", "([0-9]{2})","01"],
+    ["getDate", "setDate", "-", "([0-9]{2})","01"],
+    ["getHours", "setHours", "T", "([0-9]{2})","00"],
+    ["getMinutes", "setMinutes", ":", "([0-9]{2})","00"],
+    ["getSeconds", "setSeconds", ":", "([0-9]{2})","00"],
+    [null, null, ".", "([0-9]{3})Z?","000"]
+]
 
 function getArgs() {
     return {
@@ -24,43 +35,66 @@ function getArgs() {
             const sources = givenSources.split(",");
             for (const source of sources) {
                 if (!(await fileExists(scrappersPath+source+".js")))
-                    return {success: false, msg: `The source ${source} does not exist`};
+                    return {success: false, msg: `The source "${source}" does not exist`};
             }
 
             return {success: true, data: sources};
         },
-        date: async (strDate,{sources}) => {
-            
-            const files = await fs.readdir(scrappersPath).then(files =>
+        date: async (strDate,params) => {
+            const {sources} = params;
+            let regex = "";
+            let inputUnits = null;
+            if (strDate) {
+                for (const [,,del,reg] of dateUnits) {
+                    regex += `${del && "\\"+del}${reg}`;
+                    const match = strDate.match(`^${regex}$`);
+                    if (match !== null) {
+                        inputUnits = match.slice(1)
+                        break;
+                    }
+                }
+            }
+            if (strDate && inputUnits === null)
+                return {success: false, msg: `"${strDate}" is not a valid date`}
+
+            const date = strDate && new Date(dateUnits.reduce((acc,[,,del,,defaultValue],i) =>
+                acc+del+(inputUnits[i] ?? defaultValue)
+            , ""))
+            const files = await fs.readdir(path).then(files =>
                 files.filter(filename => {
                     const [fileSource,filestrDate] = filename.split(".")[0].split("_");
                     if (!sources.includes(fileSource))
                         return false;
-                    if (["all",undefined].includes(strDate))
+                    if (strDate === undefined)
                         return true;
 
                     const fileDate = new Date(filestrDate);
-                    const date = new Date(strDate);
 
                     if (fileDate.getTime() < date.getTime())
                         return false;
-                    
+
+                    for (let i=dateUnits.length-1;i>=0;i--) {
+                        const [getter,setter] = dateUnits[i];
+                        if (getter === null || setter === null)
+                            continue;
+                        if (inputUnits[i] === undefined)
+                            continue;
+
+                        const getUnit = typeof(getter) === "string" ? (d => d[getter]()) : getter;
+                        const setUnit = typeof(setter) === "string" ? ((d,n) => d[setter](n)) : setter;
+
+                        const dateB = new Date(date.getTime());
+                        setUnit(dateB, getUnit(dateB)+1);
+                        dateB.setMilliseconds(dateB.getMilliseconds()-1)
+                        return (fileDate.getTime() <= dateB.getTime())
+                    }
+
+                    return true;
                 })    
             )
-            
-            // for (let i=0;i<files.length;i++) {
-            //     const file = files[i];
-            //     if (await fileExists(path+file))
-            //         continue;
-            //     if ([undefined,"all"].includes(sources)) {
-            //         files.splice(i,1);
-            //         i--;
-            //         continue;
-            //     }
-            //     return {success: false, msg: `The file ${file} does not exist`}
-            // }
-
-            return {success: true, params: {files}};
+            if (files.length === 0)
+                return {success: false, msg: "Nothing file has been found with your query"}
+            return {success: true, params: {...params, files}};
         }
     }
 }
@@ -83,9 +117,17 @@ const infosFieldsBySource = {
     camerci: (infos) => ({camerci_desc: infos, op_type: "public"})
 };
 
-async function execute({files}) {    
+async function execute({files,sources}) {    
+    console.log("Selected sources : ");
+    console.log(sources.join(", "));
     console.log("\nCSVs files to aggregate :");
-    console.log(files.map(file => "\t"+file).join("\n"));
+    console.log(files.map(file => "\t"+file).join("\n"))
+
+    const res = await question("Do you want to aggregate these datas (Y/n) ?  ");
+    if (!["yes","y","oui","o"].some(str => str === res.toLowerCase())) {
+        console.log("no")
+        return;
+    }
     
     let acc = {createds: {}, aggregateds: {}};
 
