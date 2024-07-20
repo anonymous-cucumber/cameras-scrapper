@@ -20,17 +20,45 @@
         </main>
     </body>
     <script>
-        const map = L.map('map').setView([51.505, -0.09], 13);
+        const {offsetWidth: mapWidth, offsetHeight: mapHeight} = document.getElementById("map")
+
+        const map = L.map('map').setView([47.272899, 2.446147], 6);
+        let markers = [];
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
-        fetch("/api/cameras/paris")
-            .then(res => res.json())
-            .then(cameras => {
-                for ({lat,lon} of cameras)
-                    L.marker([lat, lon]).addTo(map)
-            })
+        function fetchCameras(){
+            const {lat: lat2, lng: lng1} = map.containerPointToLatLng(L.point(0, 0))
+
+            const {lat: lat1, lng: lng2} = map.containerPointToLatLng(L.point(mapWidth, mapHeight))
+
+            fetch(`/api/cameras?bbox=${[lng1,lat1,lng2,lat2].join(",")}&width=${mapWidth}&height=${mapHeight}`)
+                .then(res => res.json())
+                .then(datas => {
+                    cleanMarkers()
+
+                    for (const data of datas) {
+                        const marker = new L.Marker({lat: data.lat, lng: data.lon}, data.type === "zone" ?{
+                            icon: new L.DivIcon({
+                                html: data.count.toString()
+                            })
+                        } : undefined);
+                        map.addLayer(marker);
+
+                        markers.push(marker);
+                    }
+                })
+        }
+        function cleanMarkers() {
+            for (const marker of markers) {
+                map.removeLayer(marker)
+            }
+            markers = [];
+        }
+
+        fetchCameras();
+        map.on("moveend", fetchCameras)
     </script>
 </html>
