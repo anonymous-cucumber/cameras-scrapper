@@ -145,6 +145,8 @@ async function execute({files,sources}) {
 
     for (const file of files) {
         console.log("Importing "+file+" ...")
+        const date = new Date();
+
         const nbLines = await lazyReadCsv(path+file, async (_acc,_obj,i) => {
             return i+1;
         })
@@ -155,12 +157,13 @@ async function execute({files,sources}) {
             const source = file.split("_")[0]
             const [lat,lon,infos] = [parseFloat(obj.lat),parseFloat(obj.lon),JSON.parse(obj.infos)];
             
-            if ((await Camera.findOne({coordinates_source: source, lat, lon})) !== null)
+            if ((await Camera.findOne({coordinatesSource: source, lat, lon})) !== null)
                 return {createds, aggregateds};
 
-            const computedInfos = infosFieldsBySource[source](infos)
+            const computedInfos = infosFieldsBySource[source](infos);
+            computedInfos[source].date = date
 
-            const radius = computedInfos.type === "public" ? publicRadius : privateRadius
+            const radius = computedInfos.type === "public" ? publicRadius : privateRadius;
 
             const minLat = destinationPointLat(lat, true, radius);
             const maxLat = destinationPointLat(lat, false, radius);
@@ -170,31 +173,31 @@ async function execute({files,sources}) {
             const nearCamera = await Camera.findOne({
                 lat: {$gte: minLat, $lte: maxLat},
                 lon: {$gte: minLon, $lte: maxLon},
-                coordinates_source: {$ne: source},
+                coordinatesSsource: {$ne: source},
                 "infos.type": computedInfos.type
             });
 
             if (nearCamera !== null) {
-                if (nearCamera.infos_sources.includes(source))
+                if (nearCamera.infos[source] !== undefined)
                     return {createds, aggregateds};
                 
-                const [coordinatesToKeep,coordinatesSource] = (computedInfos.type === "public" && ["camerci","parisPoliceArcgis"].includes(nearCamera.coordinates_source)) ?
-                                                [{lat: nearCamera.lat, lon: nearCamera.lon},nearCamera.coordinates_source] :
-                                                [{lat, lon},source]
+                const [coordinatesToKeep,coordinatesDate,coordinatesSource] = (computedInfos.type === "public" && ["camerci","parisPoliceArcgis"].includes(nearCamera.coordinatesSource)) ?
+                                                [{lat: nearCamera.lat, lon: nearCamera.lon},nearCamera.coordinatesDate,nearCamera.coordinatesSource] :
+                                                [{lat, lon},date,source]
                 
-                nearCamera.coordinates_source = coordinatesSource;
+                nearCamera.coordinatesDate = coordinatesDate;
+                nearCamera.coordinatesSource = coordinatesSource;
                 nearCamera.lat = coordinatesToKeep.lat;
                 nearCamera.lon = coordinatesToKeep.lon;
                 nearCamera.infos = {...nearCamera.infos, ...computedInfos};
-                nearCamera.infos_sources.push(source);
                 
                 await nearCamera.save();
                 return {createds, aggregateds: {...aggregateds, [source]: (aggregateds[source]??0) + 1}};
             }
             
             await Camera.create({
-                coordinates_source: source,
-                infos_sources: [source],
+                coordinatesDate: date,
+                coordinatesSource: source,
                 lat, lon,
                 infos: computedInfos
             })

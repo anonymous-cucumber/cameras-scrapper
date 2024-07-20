@@ -4,22 +4,29 @@ const {connect} = require("../Mongo");
 const db = connect();
 
 const CameraSchema = new Schema({
-    coordinates_source: {type: String, required: true},
+    coordinatesDate: {type: Date, required: true},
+    coordinatesSource: {type: String, required: true},
+    
     lat: {type: Number, required: true},
     lon: {type: Number, required: true},
     
-    infos_sources: [{type: String, required: true}],
     infos: new Schema({
         parisPoliceArcgis: new Schema({
+            date: {type: Date, required: true},
+
             adresse: {type: String, required: false},
             code_postal: {type: String, required: false},
         }),
 
         camerci: new Schema({
+            date: {type: Date, required: true},
+
             desc: {type: String, required: false}
         }),
 
         surveillanceUnderSurveillance: new Schema({
+            date: {type: Date, required: true},
+
             description: {type: String, required: false},
             camera_direction: {type: Number, required: false},
             camera_mount: {type: String, required: false},
@@ -28,6 +35,8 @@ const CameraSchema = new Schema({
         }),
 
         sousSurveillanceNet: new Schema({
+            date: {type: Date, required: true},
+
             zone: {type: String, required: false},
             apparence: {type: String, required: false},
             direction: {type: Number, required: false},
