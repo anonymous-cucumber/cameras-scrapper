@@ -10,7 +10,7 @@ app.use(express.static('public'));
 
 
 const pixelPartSize = 100;
-const showCamerasLimit = 3;
+const showCamerasLimit = 10;
 app.get("/api/cameras", (req,res) => {
     const parsedQueries = parseQueries(req.query,"getCameras");
     if (parsedQueries === null)
@@ -44,7 +44,8 @@ app.get("/api/cameras", (req,res) => {
                         lat1,lon1,lat2,lon2
                     }
                 
-                return Camera.find(cameraQuery).then(cameras => cameras.map(camera => {camera.type = "camera"; return camera}));
+                let cameras = await Camera.find(cameraQuery);
+                return cameras.map(camera => ({...camera._doc, type: "camera"}))
             }),
         100
     )
