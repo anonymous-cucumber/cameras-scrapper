@@ -1,8 +1,8 @@
 const sourcesFilterConfig = {
-    camerci: {title: "Camerci", link: "https://camerci.fr", checked: true},
-    parisPoliceArcgis: {title: "Arcgis Paris Police", link: "https://arcg.is/08y0y10", checked: true},
-    sousSurveillanceNet: {title: "Paris Sous Surveillance", link: "https://www.sous-surveillance.net", checked: true},
-    surveillanceUnderSurveillance: {title: "Surveillance Under Surveillance", link: "https://sunders.uber.space", checked: true}
+    camerci: {title: "Camerci", link: "https://camerci.fr"},
+    parisPoliceArcgis: {title: "Arcgis Paris Police", link: "https://arcg.is/08y0y10"},
+    sousSurveillanceNet: {title: "Paris Sous Surveillance", link: "https://www.sous-surveillance.net"},
+    surveillanceUnderSurveillance: {title: "Surveillance Under Surveillance", link: "https://sunders.uber.space"}
 }
 
 let filterSectionPrototype = null;
@@ -11,7 +11,7 @@ let filterLinePrototype = null;
 function generateFilterSection(title, filtersConfig, onFilter) {
     let filters = Object.entries(filtersConfig).reduce((acc,[id,{checked}]) => ({...acc, [id]: !!checked}) , {})
 
-    let collapsed = false;
+    let expanded = false;
 
     const filterSection = filterSectionPrototype.cloneNode(true);
 
@@ -21,9 +21,9 @@ function generateFilterSection(title, filtersConfig, onFilter) {
     const filtersList = filterSection.querySelector(".filter-lines");
     const arrow = titleBlock.querySelector("img");
     titleBlock.addEventListener("click", () => {
-        collapsed = !collapsed;
-        arrow.classList[collapsed ? "add" : "remove"]("down")
-        filtersList.classList[collapsed ? "remove" : "add"]("hidden")
+        expanded = !expanded;
+        arrow.classList[expanded ? "add" : "remove"]("down")
+        filtersList.classList[expanded ? "remove" : "add"]("hidden")
     })
     filtersList.innerHTML = "";
     
@@ -52,6 +52,10 @@ const filters = {
     coordinatesSources: {
         title: "Filter par source - positions",
         filtersConfig: sourcesFilterConfig
+    },
+    infosSources: {
+        title: "Filter par source - infos",
+        filtersConfig: sourcesFilterConfig
     }
 }
 
@@ -67,7 +71,8 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const [,filter] of Object.entries(filters)) {
         const {title,filtersConfig} = filter
         filterSectionsDiv.appendChild(generateFilterSection(title, filtersConfig, (filtered) => {
-            filter.value = Object.entries(filtered).filter(([,value]) => value).map(([key]) => key)
+            filter.value = Object.entries(filtered).filter(([,value]) => value).map(([key]) => key);
+            fetchCameras()
         }))   
     }
 })

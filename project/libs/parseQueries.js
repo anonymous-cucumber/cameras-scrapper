@@ -39,6 +39,7 @@ const queriesParser = {
         }
     }
 }
+queriesParser.getCameras.infosSources = queriesParser.getCameras.coordinatesSources
 
 async function parseQueries(queries, queryType) {
     if (queriesParser[queryType] === undefined)

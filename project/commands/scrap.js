@@ -1,14 +1,14 @@
 const fs = require("fs/promises");
 const {fileExists} = require("../libs/fsUtils");
-const {scrapperPath,csvPath} = require("../paths");
+const {scrappersPath,csvPath} = require("../paths");
 
 function getArgs() {
     return {
         scrapper: async (scrapper) => {
-            if (!(await fileExists(scrapperPath+scrapper+".js"))) {
+            if (!(await fileExists(scrappersPath+scrapper+".js"))) {
                 return {success: false, msg: `The scrapper ${scrapper} does not exist`}
             };
-            return {success: true, params: {scrapper: require(scrapperPath+scrapper+".js"), scrapperName: scrapper}};
+            return {success: true, params: {scrapper: require(scrappersPath+scrapper+".js"), scrapperName: scrapper}};
         },
         additionalParams: async (additionalParams,params) => {
             const {scrapper} = params;

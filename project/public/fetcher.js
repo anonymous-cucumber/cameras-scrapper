@@ -3,15 +3,30 @@ let markers = [];
 let currentPolygon = null;
 let currentPolygonCoordinates = null;
 
+function stringifyQuery(queryObj) {
+    return Object.entries(queryObj)
+        .map(([key,value]) => {
+            if (value === undefined || (value instanceof Array && value.length === 0)) 
+                return null;
+            if (value instanceof Array)
+                return value.map(v => `${key}[]=${v}`).join("&")
+            return `${key}=${value}`;
+        }).filter(v => v !== null).join("&")
+}
 
 function fetchCameras(){
     const {lat: lat2, lng: lng1} = map.containerPointToLatLng(L.point(0, 0))
 
     const {lat: lat1, lng: lng2} = map.containerPointToLatLng(L.point(mapWidth, mapHeight))
 
-    console.log({filters})
+    const query = stringifyQuery({
+        bbox: [lng1,lat1,lng2,lat2].join(","),
+        width: mapWidth,
+        height: mapHeight,
+        ...Object.entries(filters).reduce((acc,[key,{value}]) => ({...acc, [key]: value}), {})
+    })
 
-    fetch(`/api/cameras?bbox=${[lng1,lat1,lng2,lat2].join(",")}&width=${mapWidth}&height=${mapHeight}`)
+    fetch("/api/cameras?"+query)
         .then(res => res.json())
         .then(datas => {
             cleanMarkers()

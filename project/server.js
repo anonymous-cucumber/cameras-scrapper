@@ -17,7 +17,7 @@ app.get("/api/cameras", async (req,res) => {
         return res.sendStatus(400);
 
 
-    const {bbox: [lon1,lat1,lon2,lat2], width, height, doGetAllCameras, coordinatesSources} = parsedQueries;
+    const {bbox: [lon1,lat1,lon2,lat2], width, height, doGetAllCameras, coordinatesSources, infosSources} = parsedQueries;
 
     const degHeight = lat2-lat1;
     const degWidth = lon2-lon1;
@@ -31,7 +31,8 @@ app.get("/api/cameras", async (req,res) => {
                 const cameraQuery = {
                     lat: {$gte: lat1, $lte: lat2},
                     lon: {$gte: lon1, $lte: lon2},
-                    ...(coordinatesSources ? {coordinatesSource: {$in: coordinatesSources}} : {})
+                    ...(coordinatesSources ? {coordinatesSource: {$in: coordinatesSources}} : {}),
+                    ...(infosSources ? {$or: infosSources.map(source => ({["infos."+source]: {$exists: true}}))}: {})
                 }
                 const count = await Camera.countDocuments(cameraQuery);
                 if (count === 0) return null;
