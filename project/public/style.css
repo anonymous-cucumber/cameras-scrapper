@@ -7,6 +7,44 @@
     text-align: center;
     color: #fff;
 }
-/*#map {
-    cursor: grab;
-}*/
+
+.hidden, .prototype {
+    display: none !important;
+}
+
+.filter-sections {
+    margin: 20px 0;
+}
+
+.filter-section .title-block {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    cursor: pointer;
+}
+.filter-section .title-block span {
+    user-select: none;
+    font-weight: bold;
+}
+.filter-section .title-block img {
+    width: 20px;
+    height: 15px;
+}
+.filter-section .title-block img.down {
+    width: 15px;
+    height: 20px;
+    transform: rotate(90deg);
+}
+
+.filter-section .filter-lines {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+}
+.filter-section .filter-lines .filter-line {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    cursor: pointer;
+}

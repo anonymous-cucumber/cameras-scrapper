@@ -1,3 +1,5 @@
+const getAllSources = require("./getAllSources");
+
 const queriesParser = {
     getCameras: {
         bbox: (bbox) => {
@@ -27,17 +29,24 @@ const queriesParser = {
             height = parseInt(height);
             return (isNaN(height) || height < 0) ? "error" : height;
         },
-        doGetAllCameras: (value) => value === "true"
+        doGetAllCameras: (value) => value === "true",
+        coordinatesSources: async (sources) => {
+            if (sources === undefined) return undefined;
+
+            const allSources = await getAllSources();
+
+            return (!(sources instanceof Array) || sources.some(source => !allSources.includes(source))) ? "error" : sources
+        }
     }
 }
 
-function parseQueries(queries, queryType) {
+async function parseQueries(queries, queryType) {
     if (queriesParser[queryType] === undefined)
         throw new Error(`The '${queryType}' query type does not exist`);
 
     const parsedQueries = {};
     for (const [key,parser] of Object.entries(queriesParser[queryType])) {
-        const parsed = parser(queries[key]);
+        const parsed = await parser(queries[key]);
         if (parsed === "error") return null;
         parsedQueries[key] = parsed
     }

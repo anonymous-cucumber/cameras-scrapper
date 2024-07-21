@@ -1,13 +1,14 @@
 const fs = require("fs/promises");
 const {fileExists} = require("../libs/fsUtils");
+const {scrapperPath,csvPath} = require("../paths");
 
 function getArgs() {
     return {
         scrapper: async (scrapper) => {
-            if (!(await fileExists(__dirname+"/../scrappers/"+scrapper+".js"))) {
+            if (!(await fileExists(scrapperPath+scrapper+".js"))) {
                 return {success: false, msg: `The scrapper ${scrapper} does not exist`}
             };
-            return {success: true, params: {scrapper: require(__dirname+"/../scrappers/"+scrapper+".js"), scrapperName: scrapper}};
+            return {success: true, params: {scrapper: require(scrapperPath+scrapper+".js"), scrapperName: scrapper}};
         },
         additionalParams: async (additionalParams,params) => {
             const {scrapper} = params;
@@ -38,7 +39,7 @@ async function execute({scrapper,scrapperName,additionalParams}) {
         }).join(";")    
     ).join("\n");
 
-    await fs.writeFile(`${__dirname}/../CSVs/${scrapperName}${additionalParams ? "_"+additionalParams : ""}_${new Date().toISOString()}.csv`, csv);
+    await fs.writeFile(`${csvPath}${scrapperName}${additionalParams ? "_"+additionalParams : ""}_${new Date().toISOString()}.csv`, csv);
 
     console.log("csv file for '"+scrapperName+"' has been succesfully scrapped !")
 }

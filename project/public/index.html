@@ -9,7 +9,8 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
             <link rel="stylesheet" href="/style.css"/>
-            <script src="script.js"></script>
+            <script src="/fetcher.js"></script>
+            <script src="/filters.js"></script>
             <style>
                 #map {
                     height: 700px;
@@ -18,6 +19,25 @@
         </header>
         <main>
             <h1>Carte de caméras :</h1>
+            <div class="filter-sections">
+                <div class="prototype filter-section">
+                    <div class="title-block">
+                        <span>Filtrer par positions</span>
+                        <img src="/arrow.png"/>
+                    </div>
+                    <div class="filter-lines hidden">
+                        <div class="filter-line">
+                            <input type="checkbox">
+                            <div class="filter-line-title">Camerci</div>
+                        </div>
+                        <div class="filter-line">
+                            <input type="checkbox">
+                            <div class="filter-line-title">Arcgis Paris Police</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div id="map"></div>
         </main>
     </body>

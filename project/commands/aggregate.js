@@ -2,39 +2,30 @@ const fs = require("fs/promises");
 const lazyReadCsv = require("../libs/lazyReadCsv");
 const Camera = require("../models/Camera");
 const {destinationPointLat, destinationPointLon} = require("../libs/convert");
-const {fileExists} = require("../libs/fsUtils");
 const {question} = require("../libs/ui");
+const getAllSources = require("../libs/getAllSources");
 const {deductDateRange} = require("../libs/datetimeMatching");
+const {csvPath} = require("../paths");
 
 const publicRadius = 10; // 10 metters;
 const privateRadius = 3; // 3 metters;
 
-const path = __dirname+"/../CSVs/";
-const scrappersPath = __dirname+"/../scrappers/";
-
 function getArgs() {
     return {
         sources: async givenSources => {
+            const allSources = await getAllSources();
             if ([undefined,"all"].includes(givenSources)) {
-                const sources = await fs.readdir(scrappersPath)
-                                    .then(files => 
-                                        files
-                                            .filter(file => file !== ".keep")
-                                            .map(file => file.replace(".js",""))
-                                    )
-                return {success: true, data: sources}
+                return {success: true, data: allSources}
             }
             const sources = givenSources.split(",");
             for (const source of sources) {
-                if (!(await fileExists(scrappersPath+source+".js")))
+                if (!allSources.includes(source))
                     return {success: false, msg: `The source "${source}" does not exist`};
             }
 
             return {success: true, data: sources};
         },
         date: (strDate,params) => {
-            const {sources} = params;
-            
             if (strDate === "all")
                 strDate = undefined;
 
@@ -48,7 +39,7 @@ function getArgs() {
         additionalParams: async (additionalParams,params) => {
             const {sources, dateRange: [date, dateB]} = params;
 
-            const files = await fs.readdir(path).then(files =>
+            const files = await fs.readdir(csvPath).then(files =>
                 files.filter(filename => {
                     const splittedFilename = filename.split(".csv")[0].split("_");
                     const fileSource = splittedFilename[0];
@@ -147,10 +138,10 @@ async function execute({files,sources}) {
         console.log("Importing "+file+" ...")
         const date = new Date();
 
-        const nbLines = await lazyReadCsv(path+file, async (_acc,_obj,i) => {
+        const nbLines = await lazyReadCsv(csvPath+file, async (_acc,_obj,i) => {
             return i+1;
         })
-        acc = await lazyReadCsv(path+file, async ({createds, aggregateds},obj,i) => {
+        acc = await lazyReadCsv(csvPath+file, async ({createds, aggregateds},obj,i) => {
             if ((i+1)%Math.floor(nbLines/100) === 0) {
                 console.log(`${i+1}/${nbLines} (${Math.round((i+1)/(nbLines)*100)}%)`)
             }

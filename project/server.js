@@ -11,13 +11,13 @@ app.use(express.static('public'));
 
 const pixelPartSize = 100;
 const showCamerasLimit = 10;
-app.get("/api/cameras", (req,res) => {
-    const parsedQueries = parseQueries(req.query,"getCameras");
+app.get("/api/cameras", async (req,res) => {
+    const parsedQueries = await parseQueries(req.query,"getCameras");
     if (parsedQueries === null)
         return res.sendStatus(400);
 
 
-    const {bbox: [lon1,lat1,lon2,lat2], width, height, doGetAllCameras} = parsedQueries;
+    const {bbox: [lon1,lat1,lon2,lat2], width, height, doGetAllCameras, coordinatesSources} = parsedQueries;
 
     const degHeight = lat2-lat1;
     const degWidth = lon2-lon1;
@@ -31,6 +31,7 @@ app.get("/api/cameras", (req,res) => {
                 const cameraQuery = {
                     lat: {$gte: lat1, $lte: lat2},
                     lon: {$gte: lon1, $lte: lon2},
+                    ...(coordinatesSources ? {coordinatesSource: {$in: coordinatesSources}} : {})
                 }
                 const count = await Camera.countDocuments(cameraQuery);
                 if (count === 0) return null;

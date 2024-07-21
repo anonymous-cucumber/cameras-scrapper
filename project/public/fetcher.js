@@ -1,12 +1,15 @@
-let mapWidth,mapHeight, map;
+let mapWidth,mapHeight,map;
 let markers = [];
 let currentPolygon = null;
 let currentPolygonCoordinates = null;
+
 
 function fetchCameras(){
     const {lat: lat2, lng: lng1} = map.containerPointToLatLng(L.point(0, 0))
 
     const {lat: lat1, lng: lng2} = map.containerPointToLatLng(L.point(mapWidth, mapHeight))
+
+    console.log({filters})
 
     fetch(`/api/cameras?bbox=${[lng1,lat1,lng2,lat2].join(",")}&width=${mapWidth}&height=${mapHeight}`)
         .then(res => res.json())
