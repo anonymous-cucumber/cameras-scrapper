@@ -30,16 +30,11 @@ const queriesParser = {
             return (isNaN(height) || height < 0) ? "error" : height;
         },
         doGetAllCameras: (value) => value === "true",
-        coordinatesSources: async (sources) => {
-            if (sources === undefined) return undefined;
-
-            const allSources = await getAllSources();
-
-            return (!(sources instanceof Array) || sources.some(source => !allSources.includes(source))) ? "error" : sources
-        }
+        coordinatesSources: async (value) => (value instanceof Array || value === undefined) ? value : "error",
+        infosSources: async (value) => (value instanceof Array || value === undefined) ? value : "error",
+        types: (value) => (value instanceof Array || value === undefined) ? value : "error"
     }
 }
-queriesParser.getCameras.infosSources = queriesParser.getCameras.coordinatesSources
 
 async function parseQueries(queries, queryType) {
     if (queriesParser[queryType] === undefined)

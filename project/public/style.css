@@ -1,3 +1,7 @@
+#map {
+    z-index: 1;
+}
+
 .zone-tooltip {
     min-width: 30px;
     height: 20px;
@@ -14,18 +18,24 @@
 
 .filter-sections {
     margin: 20px 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
 }
 
 .filter-section .title-block {
     display: flex;
     flex-direction: row;
-    gap: 10px;
     align-items: center;
     cursor: pointer;
 }
 .filter-section .title-block span {
     user-select: none;
     font-weight: bold;
+}
+.filter-section .title-block .number {
+    width: 30px;
+    margin: 0 5px;
 }
 .filter-section .title-block img {
     width: 20px;
@@ -41,10 +51,22 @@
     margin-top: 10px;
     display: flex;
     flex-direction: column;
+    position: absolute;
+    z-index: 2;
+    background-color: white;
+    padding: 5px;
+    border-radius: 0 0 10px 10px;
+    border-bottom: 1px solid black;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    margin-top: 20px;
 }
 .filter-section .filter-lines .filter-line {
     display: flex;
     flex-direction: row;
     gap: 10px;
+    cursor: pointer;
+}
+.filter-section .filter-lines .filter-line  input[type=checkbox]{
     cursor: pointer;
 }

@@ -1,4 +1,4 @@
-let mapWidth,mapHeight,map;
+let map;
 let markers = [];
 let currentPolygon = null;
 let currentPolygonCoordinates = null;
@@ -17,12 +17,13 @@ function stringifyQuery(queryObj) {
 function fetchCameras(){
     const {lat: lat2, lng: lng1} = map.containerPointToLatLng(L.point(0, 0))
 
-    const {lat: lat1, lng: lng2} = map.containerPointToLatLng(L.point(mapWidth, mapHeight))
+    const {offsetWidth, offsetHeight} = document.getElementById("map")
+    const {lat: lat1, lng: lng2} = map.containerPointToLatLng(L.point(offsetWidth, offsetHeight))
 
     const query = stringifyQuery({
         bbox: [lng1,lat1,lng2,lat2].join(","),
-        width: mapWidth,
-        height: mapHeight,
+        width: offsetWidth,
+        height: offsetHeight,
         ...Object.entries(filters).reduce((acc,[key,{value}]) => ({...acc, [key]: value}), {})
     })
 
@@ -89,10 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
-
-    const {offsetWidth, offsetHeight} = document.getElementById("map")
-    mapWidth = offsetWidth;
-    mapHeight = offsetHeight;
 
     fetchCameras();
     map.on("moveend", fetchCameras)

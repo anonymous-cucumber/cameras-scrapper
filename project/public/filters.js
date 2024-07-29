@@ -5,10 +5,15 @@ const sourcesFilterConfig = {
     surveillanceUnderSurveillance: {title: "Surveillance Under Surveillance", link: "https://sunders.uber.space"}
 }
 
+const typesFilterConfig = {
+    public: {title: "Publiques"},
+    private: {title: "Privates"}
+}
+
 let filterSectionPrototype = null;
 let filterLinePrototype = null;
 
-function generateFilterSection(title, filtersConfig, onFilter) {
+function generateFilterSection(filterTitle, filtersConfig, onFilter) {
     let filters = Object.entries(filtersConfig).reduce((acc,[id,{checked}]) => ({...acc, [id]: !!checked}) , {})
 
     let expanded = false;
@@ -16,7 +21,7 @@ function generateFilterSection(title, filtersConfig, onFilter) {
     const filterSection = filterSectionPrototype.cloneNode(true);
 
     const titleBlock = filterSection.querySelector(".title-block")
-    titleBlock.querySelector("span").innerText = title
+    titleBlock.querySelector(".text").innerText = filterTitle
 
     const filtersList = filterSection.querySelector(".filter-lines");
     const arrow = titleBlock.querySelector("img");
@@ -34,28 +39,38 @@ function generateFilterSection(title, filtersConfig, onFilter) {
 
         const checkbox = filterLineDiv.querySelector("input[type=checkbox]")
         checkbox.checked = !!checked;
-        filterLineDiv.addEventListener("click", () => {
+        const onClick = (e) => {
+            e.stopPropagation();
+
             checkbox.checked = !checkbox.checked;
             filters[key] = checkbox.checked;
-            onFilter(filters)
-        })
+            const filtered = Object.entries(filters).filter(([,value]) => value).map(([key]) => key);
+            titleBlock.querySelector(".number").innerText = filtered.length == 0 ? "   " : ` (${filtered.length})`;
+            onFilter(filtered)
+        }
+        filterLineDiv.addEventListener("click", onClick);
+        checkbox.addEventListener("click", onClick);
 
         filtersList.appendChild(filterLineDiv)
     }
 
-    onFilter(filters)
+    onFilter(Object.entries(filters).filter(([,value]) => value).map(([key]) => key))
 
     return filterSection;
 }
 
 const filters = {
+    infosSources: {
+        title: "Filter par source - infos",
+        filtersConfig: sourcesFilterConfig
+    },
     coordinatesSources: {
         title: "Filter par source - positions",
         filtersConfig: sourcesFilterConfig
     },
-    infosSources: {
-        title: "Filter par source - infos",
-        filtersConfig: sourcesFilterConfig
+    types: {
+        title: "Par types",
+        filtersConfig: typesFilterConfig
     }
 }
 
@@ -71,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const [,filter] of Object.entries(filters)) {
         const {title,filtersConfig} = filter
         filterSectionsDiv.appendChild(generateFilterSection(title, filtersConfig, (filtered) => {
-            filter.value = Object.entries(filtered).filter(([,value]) => value).map(([key]) => key);
+            filter.value = filtered;
             fetchCameras()
         }))   
     }
