@@ -1,3 +1,5 @@
+import { fetchCameras } from "./fetcher.js";
+
 const sourcesFilterConfig = {
     camerci: {title: "Camerci", link: "https://camerci.fr"},
     parisPoliceArcgis: {title: "Arcgis Paris Police", link: "https://arcg.is/08y0y10"},
@@ -39,17 +41,18 @@ function generateFilterSection(filterTitle, filtersConfig, onFilter) {
 
         const checkbox = filterLineDiv.querySelector("input[type=checkbox]")
         checkbox.checked = !!checked;
-        const onClick = (e) => {
+        const onClick = (isCheckbox = false) => (e) => {
             e.stopPropagation();
 
-            checkbox.checked = !checkbox.checked;
+            if (!isCheckbox)
+                checkbox.checked = !checkbox.checked;
             filters[key] = checkbox.checked;
             const filtered = Object.entries(filters).filter(([,value]) => value).map(([key]) => key);
             titleBlock.querySelector(".number").innerText = filtered.length == 0 ? "   " : ` (${filtered.length})`;
             onFilter(filtered)
         }
-        filterLineDiv.addEventListener("click", onClick);
-        checkbox.addEventListener("click", onClick);
+        filterLineDiv.addEventListener("click", onClick());
+        checkbox.addEventListener("click", onClick(true));
 
         filtersList.appendChild(filterLineDiv)
     }
@@ -59,7 +62,7 @@ function generateFilterSection(filterTitle, filtersConfig, onFilter) {
     return filterSection;
 }
 
-const filters = {
+export const filters = {
     infosSources: {
         title: "Filter par source - infos",
         filtersConfig: sourcesFilterConfig
@@ -74,7 +77,7 @@ const filters = {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+export function initAndListenFilters(map) {
     filterSectionPrototype = document.querySelector(".filter-section.prototype");
     filterSectionPrototype.classList.remove("prototype")
     filterLinePrototype = filterSectionPrototype.querySelector(".filter-line");
@@ -87,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const {title,filtersConfig} = filter
         filterSectionsDiv.appendChild(generateFilterSection(title, filtersConfig, (filtered) => {
             filter.value = filtered;
-            fetchCameras()
+            fetchCameras(map,filters)
         }))   
     }
-})
+}

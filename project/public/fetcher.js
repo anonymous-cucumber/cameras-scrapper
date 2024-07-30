@@ -1,4 +1,3 @@
-let map;
 let markers = [];
 let currentPolygon = null;
 let currentPolygonCoordinates = null;
@@ -14,7 +13,7 @@ function stringifyQuery(queryObj) {
         }).filter(v => v !== null).join("&")
 }
 
-function fetchCameras(){
+export function fetchCameras(map,filters){
     const {lat: lat2, lng: lng1} = map.containerPointToLatLng(L.point(0, 0))
 
     const {offsetWidth, offsetHeight} = document.getElementById("map")
@@ -30,7 +29,7 @@ function fetchCameras(){
     fetch("/api/cameras?"+query)
         .then(res => res.json())
         .then(datas => {
-            cleanMarkers()
+            cleanMarkers(map)
 
             for (const data of datas) {
                 const {lat, lon, type, count} = data
@@ -70,7 +69,7 @@ function fetchCameras(){
             }
         })
 }
-function cleanMarkers() {
+function cleanMarkers(map) {
     if (currentPolygon !== null) {
         map.removeLayer(currentPolygon);
         currentPolygon = null;
@@ -81,16 +80,3 @@ function cleanMarkers() {
     }
     markers = [];
 }
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    map = L.map('map').setView([47.272899, 2.446147], 6);
-
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
-
-    fetchCameras();
-    map.on("moveend", fetchCameras)
-})
