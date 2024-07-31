@@ -13,6 +13,15 @@ function stringifyQuery(queryObj) {
         }).filter(v => v !== null).join("&")
 }
 
+function getCameraImage(camera) {
+    const {infos: {type}} = camera
+    if (type === "private")
+        return "cctvBlue.png";
+    if (type === "public")
+        return "cctvRed.png";
+    return "cctvGrey.png"
+}
+
 export function fetchCameras(map,filters){
     const {lat: lat2, lng: lng1} = map.containerPointToLatLng(L.point(0, 0))
 
@@ -37,7 +46,7 @@ export function fetchCameras(map,filters){
                     icon: type === "zone" ? 
                         new L.DivIcon({ html: `<div class="zone-tooltip">${count}</div>`}) : 
                         new L.Icon({
-                            iconUrl: "/cctv.png",
+                            iconUrl: `/images/${getCameraImage(data)}`,
                             iconSize: [25, 25]
                         })
                     })

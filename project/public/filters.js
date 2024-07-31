@@ -9,7 +9,8 @@ const sourcesFilterConfig = {
 
 const typesFilterConfig = {
     public: {title: "Publiques"},
-    private: {title: "Privates"}
+    private: {title: "Privés"},
+    "": {title: "Inconnues"}
 }
 
 let filterSectionPrototype = null;
