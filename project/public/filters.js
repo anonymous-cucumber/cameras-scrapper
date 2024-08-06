@@ -27,7 +27,7 @@ function generateFilterSection(filterTitle, filtersConfig, onFilter) {
     titleBlock.querySelector(".text").innerText = filterTitle
 
     const filtersList = filterSection.querySelector(".filter-lines");
-    const arrow = titleBlock.querySelector("img");
+    const arrow = titleBlock.querySelector(".arrow");
     titleBlock.addEventListener("click", () => {
         expanded = !expanded;
         arrow.classList[expanded ? "add" : "remove"]("down")
@@ -54,6 +54,12 @@ function generateFilterSection(filterTitle, filtersConfig, onFilter) {
         }
         filterLineDiv.addEventListener("click", onClick());
         checkbox.addEventListener("click", onClick(true));
+
+        const externalLink = filterLineDiv.querySelector(".external-link")
+        externalLink.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+        externalLink.href = link;
 
         filtersList.appendChild(filterLineDiv)
     }

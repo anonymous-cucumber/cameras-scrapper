@@ -39,11 +39,11 @@
     width: 30px;
     margin: 0 5px;
 }
-.filter-section .title-block img {
+.filter-section .title-block .arrow {
     width: 20px;
     height: 15px;
 }
-.filter-section .title-block img.down {
+.filter-section .title-block .arrow.down {
     width: 15px;
     height: 20px;
     transform: rotate(90deg);
@@ -53,6 +53,7 @@
 .filter-section .filter-lines {
     margin-top: 10px;
     display: flex;
+    gap: 10px;
     flex-direction: column;
     position: absolute;
     z-index: 2;
@@ -67,9 +68,23 @@
 .filter-section .filter-lines .filter-line {
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
     gap: 10px;
+    padding-right: 10px;
     cursor: pointer;
 }
-.filter-section .filter-lines .filter-line  input[type=checkbox]{
+.filter-section .filter-lines .filter-check {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+.filter-section .filter-lines .filter-check input[type=checkbox]{
     cursor: pointer;
+}
+.filter-section .filter-lines .filter-line .external-link img {
+    width: 15px;
+    height: 15px;
+}
+.filter-section .filter-lines .filter-line .external-link:hover {
+    background-color: #ddd;
 }
