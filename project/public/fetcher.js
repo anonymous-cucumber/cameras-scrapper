@@ -1,6 +1,15 @@
+import labels from "./labels.js";
+
 let markers = [];
 let currentPolygon = null;
 let currentPolygonCoordinates = null;
+
+let popupPrototype = null;
+export function setPopupPrototype() {
+    popupPrototype = document.querySelector(".cam-popup.prototype");
+}
+
+const popupByCamId = {};
 
 function stringifyQuery(queryObj) {
     return Object.entries(queryObj)
@@ -72,6 +81,17 @@ export function fetchCameras(map,filters){
                         currentPolygonCoordinates = {lat1,lon1,lat2,lon2}
                     });
                 }
+                if (type === "camera") {
+                    marker.on("click", () => {
+                        if (!popupByCamId[data._id]) {
+                            popupByCamId[data._id] = L.popup()
+                            .setLatLng({lat, lng: lon})
+                            .setContent(generatePopup(data))
+                        }
+
+                        popupByCamId[data._id].openOn(map)
+                    })
+                }
                 map.addLayer(marker);
 
                 markers.push(marker);
@@ -88,4 +108,61 @@ function cleanMarkers(map) {
         map.removeLayer(marker)
     }
     markers = [];
+}
+
+function generatePopup(camera) {
+    const popupContainer = popupPrototype.cloneNode(true)
+    popupContainer.classList.remove("prototype");
+
+    const sections = [
+        {
+            title: "Global",
+            properties: [[labels.type,labels[camera.infos.type] ?? camera.infos.type],[labels.lat,camera.lat],[labels.lon,camera.lon]],
+            defaultShow: true
+        },
+        ...Object.entries(camera.infos)
+            .filter(([sectionKey]) => !["type","_id"].includes(sectionKey))
+            .map(([sectionKey,properties]) => ({
+                title: labels[sectionKey]??sectionKey, 
+                properties: Object.entries(properties)
+                    .filter(([key]) => key !== "_id")
+            }))
+    ]
+
+    popupContainer.innerHTML = "";
+
+    for (const {title,properties,defaultShow} of sections) {
+        const popupSectionContainer = popupPrototype.querySelector(".cam-section").cloneNode(true);
+        const titleBlockContainer = popupSectionContainer.querySelector(".cam-section-title-block");
+        titleBlockContainer.querySelector("span").innerText = title;
+
+        const arrow = titleBlockContainer.querySelector(".arrow");
+        const propertiesContainer = popupSectionContainer.querySelector(".cam-section-properties");
+
+        let shown = defaultShow??false;
+        const hideOrShow = () => {
+            arrow.classList[shown ? "add" : "remove"]("down");
+            propertiesContainer.classList[shown ? "remove" : "add"]("hidden");
+        }
+        hideOrShow();
+        titleBlockContainer.addEventListener("click", () => {
+            shown = !shown;
+            hideOrShow();
+        });
+        propertiesContainer.innerHTML = "";
+
+        for (const [label,value] of properties) {
+            const propertyContainer = popupPrototype.querySelector(".cam-section-property").cloneNode(true);
+
+            const [labelContainer,valueContainer] = [1,2].map(n => propertyContainer.querySelector(`span:nth-child(${n})`))
+            labelContainer.textContent = label+"\u00a0:\u00a0";
+            valueContainer.textContent = value;
+
+            propertiesContainer.appendChild(propertyContainer);
+        }
+
+        popupContainer.appendChild(popupSectionContainer);
+    }
+
+    return popupContainer;
 }

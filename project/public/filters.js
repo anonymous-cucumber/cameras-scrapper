@@ -1,17 +1,14 @@
 import { fetchCameras } from "./fetcher.js";
+import labels from "./labels.js";
 
 const sourcesFilterConfig = {
-    camerci: {title: "Camerci", link: "https://camerci.fr"},
-    parisPoliceArcgis: {title: "Arcgis Paris Police", link: "https://arcg.is/08y0y10"},
-    sousSurveillanceNet: {title: "Paris Sous Surveillance", link: "https://www.sous-surveillance.net"},
-    surveillanceUnderSurveillance: {title: "Surveillance Under Surveillance", link: "https://sunders.uber.space"}
+    camerci: {link: "https://camerci.fr"},
+    parisPoliceArcgis: {link: "https://arcg.is/08y0y10"},
+    sousSurveillanceNet: {link: "https://www.sous-surveillance.net"},
+    surveillanceUnderSurveillance: {link: "https://sunders.uber.space"}
 }
 
-const typesFilterConfig = {
-    public: {title: "Publiques"},
-    private: {title: "Privés"},
-    "": {title: "Inconnues"}
-}
+const typesFilterConfig = ["public","private",""];
 
 let filterSectionPrototype = null;
 let filterLinePrototype = null;
@@ -21,26 +18,29 @@ function generateFilterSection(filterTitle, filtersConfig, onFilter) {
 
     let expanded = false;
 
-    const filterSection = filterSectionPrototype.cloneNode(true);
+    const filterSectionContainer = filterSectionPrototype.cloneNode(true);
+    filterSectionContainer.classList.remove("prototype")
 
-    const titleBlock = filterSection.querySelector(".title-block")
-    titleBlock.querySelector(".text").innerText = filterTitle
+    const titleBlockContainer = filterSectionContainer.querySelector(".title-block")
+    titleBlockContainer.querySelector(".text").innerText = filterTitle
 
-    const filtersList = filterSection.querySelector(".filter-lines");
-    const arrow = titleBlock.querySelector(".arrow");
-    titleBlock.addEventListener("click", () => {
+    const filtersListContainer = filterSectionContainer.querySelector(".filter-lines");
+    const arrow = titleBlockContainer.querySelector(".arrow");
+    titleBlockContainer.addEventListener("click", () => {
         expanded = !expanded;
         arrow.classList[expanded ? "add" : "remove"]("down")
-        filtersList.classList[expanded ? "remove" : "add"]("hidden")
+        filtersListContainer.classList[expanded ? "remove" : "add"]("hidden")
     })
-    filtersList.innerHTML = "";
+    filtersListContainer.innerHTML = "";
     
-    for (const [key,{title,link,checked}] of Object.entries(filtersConfig)) {
+    for (const config of (filtersConfig instanceof Array ? filtersConfig : Object.entries(filtersConfig))) {
 
-        const filterLineDiv = filterLinePrototype.cloneNode(true);
-        filterLineDiv.querySelector(".filter-line-title").innerText = title
+        const [key,{title,link,checked}] = config instanceof Array ? config : [config,{}];
 
-        const checkbox = filterLineDiv.querySelector("input[type=checkbox]")
+        const filterLineContainer = filterLinePrototype.cloneNode(true);
+        filterLineContainer.querySelector(".filter-line-title").innerText = title??labels[key]??key;
+
+        const checkbox = filterLineContainer.querySelector("input[type=checkbox]")
         checkbox.checked = !!checked;
         const onClick = (isCheckbox = false) => (e) => {
             e.stopPropagation();
@@ -49,24 +49,28 @@ function generateFilterSection(filterTitle, filtersConfig, onFilter) {
                 checkbox.checked = !checkbox.checked;
             filters[key] = checkbox.checked;
             const filtered = Object.entries(filters).filter(([,value]) => value).map(([key]) => key);
-            titleBlock.querySelector(".number").innerText = filtered.length == 0 ? "   " : ` (${filtered.length})`;
+            titleBlockContainer.querySelector(".number").innerText = filtered.length == 0 ? "   " : ` (${filtered.length})`;
             onFilter(filtered)
         }
-        filterLineDiv.addEventListener("click", onClick());
+        filterLineContainer.addEventListener("click", onClick());
         checkbox.addEventListener("click", onClick(true));
 
-        const externalLink = filterLineDiv.querySelector(".external-link")
-        externalLink.addEventListener("click", (e) => {
-            e.stopPropagation();
-        });
-        externalLink.href = link;
+        const externalLink = filterLineContainer.querySelector(".external-link")
+        if (link) {
+            externalLink.addEventListener("click", (e) => {
+                e.stopPropagation();
+            });
+            externalLink.href = link;
+        } else {
+            externalLink.classList.add("hidden")
+        }
 
-        filtersList.appendChild(filterLineDiv)
+        filtersListContainer.appendChild(filterLineContainer)
     }
 
     onFilter(Object.entries(filters).filter(([,value]) => value).map(([key]) => key))
 
-    return filterSection;
+    return filterSectionContainer;
 }
 
 export const filters = {

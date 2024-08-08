@@ -18,6 +18,10 @@
     display: none !important;
 }
 
+.arrow.down {
+    transform: rotate(90deg);
+}
+
 .filter-sections {
     margin: 20px 0;
     display: flex;
@@ -46,7 +50,6 @@
 .filter-section .title-block .arrow.down {
     width: 15px;
     height: 20px;
-    transform: rotate(90deg);
     padding: 0 2.5px;
 }
 
@@ -87,4 +90,54 @@
 }
 .filter-section .filter-lines .filter-line .external-link:hover {
     background-color: #ddd;
+}
+
+.cam-popup {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 300px;
+}
+.cam-popup .cam-section .cam-section-title-block {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    background-color: #eee;
+    padding: 0 10px;
+    border-radius: 10px;
+}
+.cam-popup .cam-section .cam-section-title-block span {
+    font-weight: bold;
+    font-size: 16px;
+}
+.cam-popup .cam-section .cam-section-title-block .arrow {
+    font-weight: bold;
+    font-size: 16px;
+    width: 15px;
+    height: 10px;
+}
+.cam-popup .cam-section .cam-section-title-block .arrow.down {
+    width: 10px;
+    height: 15px;
+    padding: 0 2.5px;
+}
+
+
+.cam-popup .cam-section .cam-section-properties {
+    display: table;
+}
+.cam-popup .cam-section .cam-section-property {
+    display: table-row;
+    margin-left: 10px;
+}
+.cam-popup .cam-section .cam-section-property span {
+    font-size: 12px;
+    display: table-cell;
+}
+.cam-popup .cam-section .cam-section-property span:nth-child(1) {
+    font-weight: bold;
+    padding-left: 10px;
+    padding-right: 5px; 
 }
