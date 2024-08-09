@@ -1,6 +1,7 @@
 const fs = require("fs/promises");
 const lazyReadCsv = require("../libs/lazyReadCsv");
 const Camera = require("../models/Camera");
+const ImportHistory = require("../models/ImportHistory");
 const {destinationPointLat, destinationPointLon} = require("../libs/convert");
 const {question} = require("../libs/ui");
 const getAllSources = require("../libs/getAllSources");
@@ -40,28 +41,32 @@ function getArgs() {
             const {sources, dateRange: [date, dateB]} = params;
 
             const files = await fs.readdir(csvPath).then(files =>
-                files.filter(filename => {
-                    const splittedFilename = filename.split(".csv")[0].split("_");
-                    const fileSource = splittedFilename[0];
-                    const filestrDate = splittedFilename[splittedFilename.length-1];
-                    const fileAdditionalParams = splittedFilename.length === 3 ? splittedFilename[1] : undefined;
+                files
+                    .map(filename => {
+                        const splittedFilename = filename.split(".csv")[0].split("_");
 
-                    if (!sources.includes(fileSource))
-                        return false;
+                        const fileSource = splittedFilename[0];
+                        const filestrDate = splittedFilename[splittedFilename.length-1];
+                        const fileDate = new Date(filestrDate);
+                        const fileAdditionalParams = splittedFilename.length === 3 ? splittedFilename[1] : undefined; 
 
-                    if (
-                        (additionalParams && additionalParams !== "nothing" && additionalParams !== fileAdditionalParams) || 
-                        (additionalParams === "nothing" && fileAdditionalParams)
-                    )
-                        return false;
+                        return {filename, fileSource, fileDate, fileAdditionalParams}
+                    })
+                    .filter(({fileSource, fileAdditionalParams, fileDate}) => {
+                        if (!sources.includes(fileSource))
+                            return false;
 
-                    if (date === null)
-                        return true;
+                        if (
+                            (additionalParams && additionalParams !== "nothing" && additionalParams !== fileAdditionalParams) || 
+                            (additionalParams === "nothing" && fileAdditionalParams)
+                        )
+                            return false;
 
-                    const fileDate = new Date(filestrDate);
+                        if (date === null)
+                            return true;
 
-                    return fileDate.getTime() >= date.getTime() && fileDate.getTime() < dateB.getTime()
-                })    
+                        return fileDate.getTime() >= date.getTime() && fileDate.getTime() < dateB.getTime()
+                    })    
             )
             if (files.length === 0)
                 return {success: false, msg: "Nothing file has been found with your query"}
@@ -124,7 +129,7 @@ async function execute({files,sources}) {
     console.log("Selected sources : ");
     console.log(sources.join(", "));
     console.log("\nCSVs files to aggregate :");
-    console.log(files.map(file => "\t"+file).join("\n"))
+    console.log(files.map(({filename}) => "\t"+filename).join("\n"))
 
     const res = await question("Do you want to aggregate these datas (Y/n) ?  ");
     if (!["yes","y","oui","o"].some(str => str === res.toLowerCase())) {
@@ -134,25 +139,31 @@ async function execute({files,sources}) {
     
     let acc = {createds: {}, aggregateds: {}};
 
-    for (const file of files) {
-        console.log("Importing "+file+" ...")
+    for (const {filename, fileSource, fileDate, fileAdditionalParams} of files) {
+        console.log("Importing "+filename+" ...")
         const date = new Date();
 
-        const nbLines = await lazyReadCsv(csvPath+file, async (_acc,_obj,i) => {
+        await ImportHistory.create({
+            source: fileSource,
+            scrappingDate: fileDate,
+            scrappingParams: fileAdditionalParams,
+            importDate: date
+        })
+
+        const nbLines = await lazyReadCsv(csvPath+filename, async (_acc,_obj,i) => {
             return i+1;
         })
-        acc = await lazyReadCsv(csvPath+file, async ({createds, aggregateds},obj,i) => {
+        acc = await lazyReadCsv(csvPath+filename, async ({createds, aggregateds},obj,i) => {
             if ((i+1)%Math.floor(nbLines/100) === 0) {
                 console.log(`${i+1}/${nbLines} (${Math.round((i+1)/(nbLines)*100)}%)`)
             }
-            const source = file.split("_")[0]
             const [lat,lon,infos] = [parseFloat(obj.lat),parseFloat(obj.lon),JSON.parse(obj.infos)];
             
-            if ((await Camera.findOne({coordinatesSource: source, lat, lon})) !== null)
+            if ((await Camera.findOne({coordinatesSource: fileSource, lat, lon})) !== null)
                 return {createds, aggregateds};
 
-            const computedInfos = infosFieldsBySource[source](infos);
-            computedInfos[source].date = date
+            const computedInfos = infosFieldsBySource[fileSource](infos);
+            computedInfos[fileSource].date = date
 
             const radius = computedInfos.type === "public" ? publicRadius : privateRadius;
 
@@ -164,18 +175,20 @@ async function execute({files,sources}) {
             const nearCamera = await Camera.findOne({
                 lat: {$gte: minLat, $lte: maxLat},
                 lon: {$gte: minLon, $lte: maxLon},
-                coordinatesSsource: {$ne: source},
+                coordinatesSource: {$ne: fileSource},
                 "infos.type": computedInfos.type
             });
 
             if (nearCamera !== null) {
-                if (nearCamera.infos[source] !== undefined)
+                if (nearCamera.infos[fileSource] !== undefined)
                     return {createds, aggregateds};
                 
                 const [coordinatesToKeep,coordinatesDate,coordinatesSource] = (computedInfos.type === "public" && ["camerci","parisPoliceArcgis"].includes(nearCamera.coordinatesSource)) ?
                                                 [{lat: nearCamera.lat, lon: nearCamera.lon},nearCamera.coordinatesDate,nearCamera.coordinatesSource] :
-                                                [{lat, lon},date,source]
+                                                [{lat, lon},fileDate,fileSource]
                 
+
+                nearCamera.updatedAt = date;                        
                 nearCamera.coordinatesDate = coordinatesDate;
                 nearCamera.coordinatesSource = coordinatesSource;
                 nearCamera.lat = coordinatesToKeep.lat;
@@ -183,16 +196,18 @@ async function execute({files,sources}) {
                 nearCamera.infos = {...nearCamera.infos, ...computedInfos};
                 
                 await nearCamera.save();
-                return {createds, aggregateds: {...aggregateds, [source]: (aggregateds[source]??0) + 1}};
+                return {createds, aggregateds: {...aggregateds, [fileSource]: (aggregateds[fileSource]??0) + 1}};
             }
             
             await Camera.create({
-                coordinatesDate: date,
-                coordinatesSource: source,
+                createdAt: date,
+                updatedAt: date,
+                coordinatesDate: fileDate,
+                coordinatesSource: fileSource,
                 lat, lon,
                 infos: computedInfos
             })
-            return {createds: {...createds, [source]: (createds[source]??0) + 1}, aggregateds};
+            return {createds: {...createds, [fileSource]: (createds[fileSource]??0) + 1}, aggregateds};
         }, ";", acc)
     }
 

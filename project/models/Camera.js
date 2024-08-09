@@ -4,6 +4,9 @@ const {connect} = require("../Mongo");
 const db = connect();
 
 const CameraSchema = new Schema({
+    updatedAt: {type: Date, required: true},
+    createdAt: {type: Date, required: true},
+
     coordinatesDate: {type: Date, required: true},
     coordinatesSource: {type: String, required: true},
     
