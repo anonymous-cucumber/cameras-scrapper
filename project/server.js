@@ -60,7 +60,7 @@ app.get("/api/cameras", async (req,res) => {
                 let cameras = await Camera.find(specificCameraQuery);
                 return cameras.map(camera => ({...camera._doc, type: "camera"}))
             }),
-        100
+        process.env.NB_PARRALLEL_CAMERA_FETCHING ?? 100
     )
     .then(results => 
             res.json(

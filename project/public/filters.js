@@ -1,4 +1,4 @@
-import { fetchCameras } from "./fetcher.js";
+import { searchCameras } from "./fetcher.js";
 import labels from "./labels.js";
 
 const sourcesFilterConfig = {
@@ -68,8 +68,6 @@ function generateFilterSection(filterTitle, filtersConfig, onFilter) {
         filtersListContainer.appendChild(filterLineContainer)
     }
 
-    onFilter(Object.entries(filters).filter(([,value]) => value).map(([key]) => key))
-
     return filterSectionContainer;
 }
 
@@ -101,7 +99,7 @@ export function initAndListenFilters(map) {
         const {title,filtersConfig} = filter
         filterSectionsDiv.appendChild(generateFilterSection(title, filtersConfig, (filtered) => {
             filter.value = filtered;
-            fetchCameras(map,filters)
+            searchCameras(map,filters)
         }))   
     }
 }

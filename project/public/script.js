@@ -1,12 +1,10 @@
-import { fetchCameras, setPopupPrototype } from "./fetcher.js";
+import { searchCameras, setPopupPrototype } from "./fetcher.js";
 import { initAndListenFilters, filters } from "./filters.js";
-
-let map;
 
 document.addEventListener("DOMContentLoaded", () => {
     setPopupPrototype();
     
-    map = L.map('map').setView([47.272899, 2.446147], 6);
+    const map = L.map('map').setView([47.272899, 2.446147], 6);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -15,8 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     L.Control.geocoder().addTo(map);
 
-    fetchCameras(map,filters);
-    map.on("moveend", () => fetchCameras(map,filters))
+    searchCameras(map,filters);
+    map.on("moveend", () => searchCameras(map,filters))
 
     initAndListenFilters(map);
 })

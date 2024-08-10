@@ -4,6 +4,9 @@ let markers = [];
 let currentPolygon = null;
 let currentPolygonCoordinates = null;
 
+let abortController = null;
+let timeout = null;
+
 let popupPrototype = null;
 export function setPopupPrototype() {
     popupPrototype = document.querySelector(".cam-popup.prototype");
@@ -31,7 +34,23 @@ function getCameraImage(camera) {
     return "cctvGrey.png"
 }
 
-export function fetchCameras(map,filters){
+export function searchCameras(map, filters) {
+    if (timeout !== null) {
+        clearTimeout(timeout);
+    }
+    timeout = setTimeout(() => {
+        timeout = null;
+        if (abortController !== null) {
+            abortController.abort();
+            abortController = null;
+        }
+
+        fetchCameras(map, filters);
+    }, 500)
+}
+
+function fetchCameras(map, filters){
+
     const {lat: lat2, lng: lng1} = map.containerPointToLatLng(L.point(0, 0))
 
     const {offsetWidth, offsetHeight} = document.getElementById("map")
@@ -44,8 +63,15 @@ export function fetchCameras(map,filters){
         ...Object.entries(filters).reduce((acc,[key,{value}]) => ({...acc, [key]: value}), {})
     })
 
-    fetch("/api/cameras?"+query)
-        .then(res => res.json())
+    document.querySelector(".loading-text").innerText = "Chargement..."
+
+    abortController = new AbortController();
+
+    fetch("/api/cameras?"+query, {signal: abortController.signal})
+        .then(res => {
+            abortController = null;
+            return res.json();
+        })
         .then(datas => {
             cleanMarkers(map)
 
@@ -96,6 +122,8 @@ export function fetchCameras(map,filters){
 
                 markers.push(marker);
             }
+
+            document.querySelector(".loading-text").innerText = "Chargé !"
         })
 }
 function cleanMarkers(map) {

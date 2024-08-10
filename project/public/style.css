@@ -2,6 +2,16 @@
     z-index: 1;
 }
 
+h1 {
+    text-align: center;
+}
+
+.loading-text {
+    font-style: italic;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
 .zone-tooltip {
     min-width: 30px;
     height: 20px;
