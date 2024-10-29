@@ -10,6 +10,7 @@ h1 {
     font-style: italic;
     margin-bottom: 10px;
     text-align: center;
+    height: 15px;
 }
 
 .zone-tooltip {
@@ -150,4 +151,30 @@ h1 {
     font-weight: bold;
     padding-left: 10px;
     padding-right: 5px; 
+}
+
+.mobile-filter-burgers {
+    border-radius: 8px;
+    width: 62px;
+    height: 70px;
+
+    padding: 0 4px;
+
+    cursor: pointer;
+
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+
+    background-color: white;
+
+    border: 2px solid rgba(0,0,0,0.2);
+}
+.mobile-filter-burgers div {
+    width: 100%;
+    height: 6px;
+    background-color: black;
+    border-radius: 4px;
+
+    position: relative;
 }

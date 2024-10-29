@@ -1,0 +1,38 @@
+@media only screen and (max-width: 750px) {
+    h1, .filter-sections {
+        display: none;
+    }
+
+    .loading-text {
+        position: absolute;
+        z-index: 2;
+        width: 100%;
+        margin-top: 2px;
+    }
+
+    body {
+        margin: 0;
+    }
+
+    .leaflet-touch .leaflet-bar a {
+        width: 50px !important;
+        height: 50px !important;
+        line-height: 50px !important;
+    }
+    .leaflet-control-geocoder {
+        min-width: 70px !important;
+        min-height: 70px !important;
+    }
+    .leaflet-control-geocoder-icon {
+        width: 70px !important;
+        height: 70px !important;
+    }
+
+    .mobile-filter-burgers {
+        display: flex;
+        position: absolute;
+        top: 88px;
+        right: 10px;
+        z-index: 2;
+    }
+}

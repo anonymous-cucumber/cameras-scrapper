@@ -10,12 +10,13 @@
             crossorigin=""></script>
             <link rel="stylesheet" href="/libs/Control.Geocoder.css" />
             <script src="/libs/Control.Geocoder.js"></script>    
-
+            <meta name="viewport" content="width=device-width">
             <link rel="stylesheet" href="/style.css"/>
+            <link rel="stylesheet" href="/style.responsive.css"/>
             <script src="script.js" type="module"></script>
             <style>
                 #map {
-                    height: 700px;
+                    height: 100%;
                 }
             </style>
         </header>
@@ -51,6 +52,11 @@
                 </div>
             </div>
             <div class="loading-text"></div>
+            <div class="mobile-filter-burgers">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
             <div id="map">
                 <div class="cam-popup prototype">
                     <div class="cam-section">
