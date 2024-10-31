@@ -1,9 +1,22 @@
-@media only screen and (max-width: 750px) {
-    h1, .filters-menu {
+@media only screen and (max-width: 400px) {
+    .filter-section {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+}
+
+@media only screen and (max-width: 750px),
+       only screen and (max-height: 750px) {
+
+    body, #map {
+        height: 100%;
+    }
+    
+    h1, .menu {
         display: none;
     }
 
-    .filters-menu {
+    .menu {
         position: absolute;
         z-index: 4;
         height: calc(100% - 40px);
@@ -35,16 +48,27 @@
         height: 100%;
     }
     .arrow {
-        content: url("/images/white-arrow.png");
+        display: none;
     }
     .title-block {
         display: flex;
         justify-content: center;
     }
+    .filter-section {
+        width: 50%;
+        min-width: 400px;
+        margin: 0 auto;
+    }
     .filter-section .filter-lines {
         position: relative;
         background-color: transparent;
         border: none;
+    }
+    .filter-section.no-expanded {
+        display: none;
+    }
+    .filter-section.expanded .title-block .text {
+        text-decoration: underline;
     }
     .filter-check {
         align-items: center;
@@ -85,7 +109,7 @@
         margin-top: 20px !important;
     }
 
-    .mobile-filter-burger {
+    .mobile-menu-burger {
         display: flex;
         position: absolute;
         top: 98px;

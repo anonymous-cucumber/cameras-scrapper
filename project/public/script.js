@@ -1,5 +1,5 @@
 import { searchCameras, setPopupPrototype } from "./fetcher.js";
-import { initAndListenFilters, filters } from "./filters.js";
+import { initAndListenFilters, filtersState, onMobileMenuCloseButton, onMobileMenuOpenButton } from "./filters.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     setPopupPrototype();
@@ -13,17 +13,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     L.Control.geocoder().addTo(map);
 
-    searchCameras(map,filters);
-    map.on("moveend", () => searchCameras(map,filters))
+    searchCameras(map,filtersState);
+    map.on("moveend", () => searchCameras(map,filtersState))
 
     initAndListenFilters(map);
 
-    document.querySelector(".mobile-filter-burger").addEventListener("click", () => {
-        document.querySelector(".filters-menu").style.display = "block";
-        document.querySelector(".black-background").style.display = "block";
-    })
-    document.querySelector(".close-mobile-menu-button").addEventListener("click", () => {
-        document.querySelector(".filters-menu").style.display = "none";
-        document.querySelector(".black-background").style.display = "none";
-    })
+    document.querySelector(".mobile-menu-burger").addEventListener("click", onMobileMenuOpenButton)
+    document.querySelector(".close-mobile-menu-button").addEventListener("click", onMobileMenuCloseButton)
 })

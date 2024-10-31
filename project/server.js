@@ -10,7 +10,7 @@ app.use(express.static('public'));
 
 
 const pixelPartSize = 100;
-const showCamerasLimit = 10;
+const showCamerasLimit = 20;
 app.get("/api/cameras", async (req,res) => {
     const parsedQueries = await parseQueries(req.query,"getCameras");
     if (parsedQueries === null)
