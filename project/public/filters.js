@@ -81,7 +81,7 @@ export const filters = {
         filtersConfig: sourcesFilterConfig
     },
     types: {
-        title: "Par types",
+        title: "Filtrer par types",
         filtersConfig: typesFilterConfig
     }
 }

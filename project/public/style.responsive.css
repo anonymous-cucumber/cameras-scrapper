@@ -1,6 +1,60 @@
 @media only screen and (max-width: 750px) {
-    h1, .filter-sections {
+    h1, .filters-menu {
         display: none;
+    }
+
+    .filters-menu {
+        position: absolute;
+        z-index: 4;
+        height: calc(100% - 40px);
+        width: calc(100% - 40px);
+        top: 0;
+        left: 0;
+        color: white;
+        margin: 0;
+        padding: 20px;
+    }
+    .close-mobile-menu-button {
+        display: block !important;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        content: url("/images/white-cross.png");
+        cursor: pointer;
+        width: 70px;
+        height: 70px;
+    }
+
+    .filter-sections {
+        margin-top: 60px;
+        flex-direction: column;
+        justify-content: start;
+        gap: 50px;
+        text-align: center;
+        width: 100%;
+        height: 100%;
+    }
+    .arrow {
+        content: url("/images/white-arrow.png");
+    }
+    .title-block {
+        display: flex;
+        justify-content: center;
+    }
+    .filter-section .filter-lines {
+        position: relative;
+        background-color: transparent;
+        border: none;
+    }
+    .filter-check {
+        align-items: center;
+    }
+    .filter-check input[type=checkbox] {
+        width: 30px;
+        height: 30px;
+    }
+    .external-link img {
+        content: url("/images/white-external-link.png") !important;
     }
 
     .loading-text {
@@ -27,11 +81,14 @@
         width: 70px !important;
         height: 70px !important;
     }
+    .leaflet-top .leaflet-control {
+        margin-top: 20px !important;
+    }
 
-    .mobile-filter-burgers {
+    .mobile-filter-burger {
         display: flex;
         position: absolute;
-        top: 88px;
+        top: 98px;
         right: 10px;
         z-index: 2;
     }

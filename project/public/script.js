@@ -17,4 +17,13 @@ document.addEventListener("DOMContentLoaded", () => {
     map.on("moveend", () => searchCameras(map,filters))
 
     initAndListenFilters(map);
+
+    document.querySelector(".mobile-filter-burger").addEventListener("click", () => {
+        document.querySelector(".filters-menu").style.display = "block";
+        document.querySelector(".black-background").style.display = "block";
+    })
+    document.querySelector(".close-mobile-menu-button").addEventListener("click", () => {
+        document.querySelector(".filters-menu").style.display = "none";
+        document.querySelector(".black-background").style.display = "none";
+    })
 })
