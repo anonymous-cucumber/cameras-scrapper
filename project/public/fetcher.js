@@ -1,4 +1,5 @@
 import labels from "./labels.js";
+import { showTemporaryMessage } from "./libs.js";
 
 let markers = [];
 let currentPolygon = null;
@@ -142,6 +143,22 @@ function generatePopup(camera) {
     const popupContainer = popupPrototype.cloneNode(true)
     popupContainer.classList.remove("prototype");
 
+    const streetViewLink = popupContainer.querySelector(".cam-street-view-button");
+    streetViewLink.href = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${camera.lat},${camera.lon}`;
+
+    const gpsPointerLink = popupContainer.querySelector(".cam-gps-pointer-button");
+    gpsPointerLink.href = `https://www.google.com/maps/search/?api=1&query=${camera.lat},${camera.lon}`;
+
+    const copyGpsButton = popupContainer.querySelector(".cam-copy-gps-button");
+    copyGpsButton.addEventListener("click", (e) => {
+        e.preventDefault()
+
+        navigator.clipboard.writeText(`${camera.lat},${camera.lon}`);
+        showTemporaryMessage("Camera coordinates copied to clipboard !")
+    })
+
+    const popupSectionsContainer = popupContainer.querySelector(".cam-sections");
+
     const sections = [
         {
             title: "Global",
@@ -157,7 +174,7 @@ function generatePopup(camera) {
             }))
     ]
 
-    popupContainer.innerHTML = "";
+    popupSectionsContainer.innerHTML = "";
 
     for (const {title,properties,defaultShow} of sections) {
         const popupSectionContainer = popupPrototype.querySelector(".cam-section").cloneNode(true);
@@ -189,7 +206,7 @@ function generatePopup(camera) {
             propertiesContainer.appendChild(propertyContainer);
         }
 
-        popupContainer.appendChild(popupSectionContainer);
+        popupSectionsContainer.appendChild(popupSectionContainer);
     }
 
     return popupContainer;

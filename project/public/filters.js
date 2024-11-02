@@ -1,7 +1,6 @@
 import { searchCameras } from "./fetcher.js";
 import labels from "./labels.js";
-
-const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+import { isMobile } from "./libs.js";
 
 const sourcesFilterConfig = {
     camerci: {link: "https://camerci.fr"},

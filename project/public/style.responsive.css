@@ -5,8 +5,8 @@
     }
 }
 
-@media only screen and (max-width: 750px),
-       only screen and (max-height: 750px) {
+@media only screen and (max-width: 600px),
+       only screen and (max-height: 600px) {
 
     body, #map {
         height: 100%;
@@ -45,7 +45,6 @@
         gap: 50px;
         text-align: center;
         width: 100%;
-        height: 100%;
     }
     .arrow {
         display: none;
@@ -125,5 +124,20 @@
         top: 98px;
         right: 10px;
         z-index: 2;
+    }
+
+    .cam-popup-top-buttons {
+        gap: 20px !important;
+    }
+
+    .cam-popup .cam-popup-top-buttons .cam-popup-top-button img {
+        width: 30px;
+        height: 30px;
+    }
+    .cam-popup .cam-popup-top-buttons .cam-street-view-button img {
+        width: 18px;
+    }
+    .cam-popup .cam-sections {
+        margin-top: 30px;
     }
 }
