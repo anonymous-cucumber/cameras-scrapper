@@ -6,7 +6,7 @@ const {destinationPointLat, destinationPointLon} = require("../libs/convert");
 const {question} = require("../libs/ui");
 const getAllSources = require("../libs/getAllSources");
 const {deductDateRange} = require("../libs/datetimeMatching");
-const {csvPath} = require("../paths");
+const {scrapCsvPath} = require("../paths");
 
 const publicRadius = 10; // 10 metters;
 const privateRadius = 3; // 3 metters;
@@ -40,8 +40,9 @@ function getArgs() {
         additionalParams: async (additionalParams,params) => {
             const {sources, dateRange: [date, dateB]} = params;
 
-            const files = await fs.readdir(csvPath).then(files =>
+            const files = await fs.readdir(scrapCsvPath).then(files =>
                 files
+                    .filter(filename => filename !== ".keep")
                     .map(filename => {
                         const splittedFilename = filename.split(".csv")[0].split("_");
 
@@ -150,10 +151,10 @@ async function execute({files,sources}) {
             importDate: date
         })
 
-        const nbLines = await lazyReadCsv(csvPath+filename, async (_acc,_obj,i) => {
+        const nbLines = await lazyReadCsv(scrapCsvPath+filename, async (_acc,_obj,i) => {
             return i+1;
         })
-        acc = await lazyReadCsv(csvPath+filename, async ({createds, aggregateds},obj,i) => {
+        acc = await lazyReadCsv(scrapCsvPath+filename, async ({createds, aggregateds},obj,i) => {
             if ((i+1)%Math.floor(nbLines/100) === 0) {
                 console.log(`${i+1}/${nbLines} (${Math.round((i+1)/(nbLines)*100)}%)`)
             }

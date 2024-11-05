@@ -1,4 +1,5 @@
 module.exports = {
-    csvPath: __dirname+"/CSVs/",
-    scrappersPath: __dirname+"/scrappers/"
+    scrapCsvPath: __dirname+"/CSVs_scraps/",
+    scrappersPath: __dirname+"/scrappers/",
+    dumpCsvPath: __dirname+"/CSVs_dumps/"
 }

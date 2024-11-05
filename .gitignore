@@ -1,4 +1,4 @@
-project/CSVs/*.csv
+project/CSVs_*/*.csv
 project/node_modules
 mongodb/data
 .env
