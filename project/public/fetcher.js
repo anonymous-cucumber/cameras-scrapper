@@ -150,12 +150,16 @@ function generatePopup(camera) {
     gpsPointerLink.href = `https://www.google.com/maps/search/?api=1&query=${camera.lat},${camera.lon}`;
 
     const copyGpsButton = popupContainer.querySelector(".cam-copy-gps-button");
-    copyGpsButton.addEventListener("click", (e) => {
-        e.preventDefault()
-
-        navigator.clipboard.writeText(`${camera.lat},${camera.lon}`);
-        showTemporaryMessage("Camera coordinates copied to clipboard !")
-    })
+    if (navigator.clipboard === undefined) {
+        copyGpsButton.style.display = "none"
+    } else {
+        copyGpsButton.addEventListener("click", (e) => {
+            e.preventDefault()
+    
+            navigator.clipboard.writeText(`${camera.lat},${camera.lon}`);
+            showTemporaryMessage("Camera coordinates copied to clipboard !")
+        })
+    }
 
     const popupSectionsContainer = popupContainer.querySelector(".cam-sections");
 

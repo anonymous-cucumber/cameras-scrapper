@@ -44,7 +44,9 @@ h1 {
     transform: rotate(90deg);
 }
 .arrow {
-    content: url("/images/arrow.png");
+    background-image: url("/images/arrow.png");
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .menu .close-mobile-menu-button {
@@ -74,9 +76,11 @@ h1 {
 }
 .filter-section .title-block .arrow {
     width: 20px;
-    height: 15px;
+    height: 15px;;
+    background-size: 20px 15px;
 }
 .filter-section .title-block .arrow.down {
+    background-size: 15px 20px;
     width: 15px;
     height: 20px;
     padding: 0 2.5px;
@@ -113,10 +117,13 @@ h1 {
 .filter-section .filter-lines .filter-check input[type=checkbox]{
     cursor: pointer;
 }
-.filter-section .filter-lines .filter-line .external-link img {
+.filter-section .filter-lines .filter-line .external-link {
     width: 15px;
     height: 15px;
-    content: url("/images/external-link.png")
+    background-image: url("/images/external-link.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
 }
 .filter-section .filter-lines .filter-line .external-link:hover {
     background-color: #ddd;
@@ -136,19 +143,22 @@ h1 {
     flex-direction: row;
     gap: 10px;
 }
-.cam-popup .cam-popup-top-buttons .cam-popup-top-button img {
+.cam-popup .cam-popup-top-buttons .cam-popup-top-button {
     width: 15px;
     height: 15px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
 }
-.cam-popup .cam-popup-top-buttons .cam-street-view-button img {
-    content: url("/images/street-view.png");
-    width: 9px;
+.cam-popup .cam-popup-top-buttons .cam-street-view-button {
+    background-image: url("/images/street-view.png");
+    background-size: 9px 15px;
 }
-.cam-popup .cam-popup-top-buttons .cam-gps-pointer-button img {
-    content: url("/images/gps-pointer.png");
+.cam-popup .cam-popup-top-buttons .cam-gps-pointer-button {
+    background-image: url("/images/gps-pointer.png");
 }
-.cam-popup .cam-popup-top-buttons .cam-copy-gps-button img {
-    content: url("/images/copy.png");
+.cam-popup .cam-popup-top-buttons .cam-copy-gps-button {
+    background-image: url("/images/copy.png");
 }
 
 .cam-popup .cam-sections {
@@ -173,11 +183,13 @@ h1 {
     font-size: 16px;
     width: 15px;
     height: 10px;
+    background-size: 15px 10px;
 }
 .cam-popup .cam-section .cam-section-title-block .arrow.down {
     width: 10px;
     height: 15px;
     padding: 0 2.5px;
+    background-size: 10px 15px;
 }
 
 
