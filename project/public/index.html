@@ -10,83 +10,92 @@
             crossorigin=""></script>
             <link rel="stylesheet" href="/libs/Control.Geocoder.css" />
             <script src="/libs/Control.Geocoder.js"></script>    
-
+            <meta name="viewport" content="width=device-width">
             <link rel="stylesheet" href="/style.css"/>
+            <link rel="stylesheet" href="/style.responsive.css"/>
             <script src="script.js" type="module"></script>
-            <style>
-                #map {
-                    height: 700px;
-                }
-            </style>
         </header>
         <main>
             <h1>Camera Scrapper</h1>
-            <div class="filter-sections">
-                <div class="prototype filter-section">
-                    <div class="title-block">
-                        <span class="text">Filtrer par positions</span>
-                        <span class="number"></span>
-                        <img class="arrow" src="/images/arrow.png"/>
-                    </div>
-                    <div class="filter-lines hidden">
-                        <div class="filter-line">
-                            <div class="filter-check">
-                                <input type="checkbox">
-                                <div class="filter-line-title">Camerci</div>
-                            </div>
-                            <a class="external-link" title="Ouvrir le lien" target="_blank">
-                                <img src="images/external-link.png" />
-                            </a>
+            <div class="black-background"></div>
+            <div class="menu">
+                <div class="close-mobile-menu-button"></div>
+                <div class="filter-sections">
+                    <div class="prototype filter-section">
+                        <div class="title-block">
+                            <span class="text">Filtrer par positions</span>
+                            <span class="number"></span>
+                            <div class="arrow"></div>
                         </div>
-                        <div class="filter-line">
-                            <div class="filter-check">
-                                <input type="checkbox">
-                                <div class="filter-line-title">Arcgis Paris Police</div>
+                        <div class="filter-lines hidden">
+                            <div class="filter-line">
+                                <div class="filter-check">
+                                    <input type="checkbox">
+                                    <div class="filter-line-title">Camerci</div>
+                                </div>
+                                <a class="external-link" title="Ouvrir le lien" target="_blank"></a>
                             </div>
-                            <a class="external-link" title="Ouvrir le lien" target="_blank">
-                                <img src="images/external-link.png" />
-                            </a>
+                            <div class="filter-line">
+                                <div class="filter-check">
+                                    <input type="checkbox">
+                                    <div class="filter-line-title">Arcgis Paris Police</div>
+                                </div>
+                                <a class="external-link" title="Ouvrir le lien" target="_blank"></a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="loading-text"></div>
+            <div class="mobile-menu-burger">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
             <div id="map">
                 <div class="cam-popup prototype">
-                    <div class="cam-section">
-                        <div class="cam-section-title-block">
-                            <span>Titre 1</span>
-                            <img class="arrow" src="/images/arrow.png"/>
-                        </div>
-                        <div class="cam-section-properties hidden">
-                            <div class="cam-section-property">
-                                <span>Type :</span>
-                                <span>publique</span>
-                            </div>
-                            <div class="cam-section-property">
-                                <span>Truc :</span>
-                                <span>machin</span>
-                            </div>
-                        </div>
+                    <div class="cam-popup-top-buttons">
+                        <a class="cam-popup-top-button cam-street-view-button" title="Street view" target="_blank" href="#"></a>
+                        <a class="cam-popup-top-button cam-gps-pointer-button" title="GPS Pointer" target="_blank" href="#"></a>
+                        <a class="cam-popup-top-button cam-copy-gps-button" title="Copy coordinates" target="_blank" href="#"></a>
                     </div>
-                    <div class="cam-section">
-                        <div class="cam-section-title-block">
-                            <span>Titre 2</span>
-                            <img class="arrow down" src="/images/arrow.png"/>
-                        </div>
-                        <div class="cam-section-properties">
-                            <div class="cam-section-property">
-                                <span>Bidule :</span>
-                                <span>chouette</span>
+                    <div class="cam-sections">
+                        <div class="cam-section">
+                            <div class="cam-section-title-block">
+                                <span>Titre 1</span>
+                                <div class="arrow"></div>
                             </div>
-                            <div class="cam-section-property">
-                                <span>Zone :</span>
-                                <span>Toulouse</span>
+                            <div class="cam-section-properties hidden">
+                                <div class="cam-section-property">
+                                    <span>Type :</span>
+                                    <span>publique</span>
+                                </div>
+                                <div class="cam-section-property">
+                                    <span>Truc :</span>
+                                    <span>machin</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="cam-section">
+                            <div class="cam-section-title-block">
+                                <span>Titre 2</span>
+                                <div class="arrow down"></div>
+                            </div>
+                            <div class="cam-section-properties">
+                                <div class="cam-section-property">
+                                    <span>Bidule :</span>
+                                    <span>chouette</span>
+                                </div>
+                                <div class="cam-section-property">
+                                    <span>Zone :</span>
+                                    <span>Toulouse</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="temporary-message hidden"><div class="content">Camera coordinates copied to clipboard !</div></div>
         </main>
     </body>
 </html>

@@ -1,10 +1,11 @@
 import { searchCameras, setPopupPrototype } from "./fetcher.js";
-import { initAndListenFilters, filters } from "./filters.js";
+import { initAndListenFilters, filtersState, onMobileMenuCloseButton, onMobileMenuOpenButton } from "./filters.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     setPopupPrototype();
-    
-    const map = L.map('map').setView([47.272899, 2.446147], 6);
+
+    const {zoom, lat, lng} = JSON.parse(localStorage.getItem("currentMapState"))??{}
+    const map = L.map('map').setView([lat??47.272899, lng??2.446147], zoom??6);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -13,8 +14,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     L.Control.geocoder().addTo(map);
 
-    searchCameras(map,filters);
-    map.on("moveend", () => searchCameras(map,filters))
+    searchCameras(map,filtersState);
+    map.on("moveend", () => {
+        const zoom = map.getZoom();
+        const {lat, lng} = map.getCenter()
+        
+        localStorage.setItem("currentMapState", JSON.stringify({zoom, lat, lng}))
+
+        searchCameras(map,filtersState);
+    })
 
     initAndListenFilters(map);
+
+    document.querySelector(".mobile-menu-burger").addEventListener("click", onMobileMenuOpenButton)
+    document.querySelector(".close-mobile-menu-button").addEventListener("click", onMobileMenuCloseButton)
 })

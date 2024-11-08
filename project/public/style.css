@@ -1,5 +1,16 @@
+html {
+    height: 100%;
+}
+body {
+    height: calc( 100% - 29px);
+}
+main {
+    height: 100%;
+}
+
 #map {
     z-index: 1;
+    height: calc( 100% - 118px )
 }
 
 h1 {
@@ -10,6 +21,7 @@ h1 {
     font-style: italic;
     margin-bottom: 10px;
     text-align: center;
+    height: 15px;
 }
 
 .zone-tooltip {
@@ -30,6 +42,15 @@ h1 {
 
 .arrow.down {
     transform: rotate(90deg);
+}
+.arrow {
+    background-image: url("/images/arrow.png");
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.menu .close-mobile-menu-button {
+    display: none;
 }
 
 .filter-sections {
@@ -55,9 +76,11 @@ h1 {
 }
 .filter-section .title-block .arrow {
     width: 20px;
-    height: 15px;
+    height: 15px;;
+    background-size: 20px 15px;
 }
 .filter-section .title-block .arrow.down {
+    background-size: 15px 20px;
     width: 15px;
     height: 20px;
     padding: 0 2.5px;
@@ -94,9 +117,13 @@ h1 {
 .filter-section .filter-lines .filter-check input[type=checkbox]{
     cursor: pointer;
 }
-.filter-section .filter-lines .filter-line .external-link img {
+.filter-section .filter-lines .filter-line .external-link {
     width: 15px;
     height: 15px;
+    background-image: url("/images/external-link.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
 }
 .filter-section .filter-lines .filter-line .external-link:hover {
     background-color: #ddd;
@@ -107,6 +134,35 @@ h1 {
     flex-direction: column;
     gap: 10px;
     min-width: 300px;
+}
+
+.cam-popup .cam-popup-top-buttons {
+    position: absolute;
+    top: 5px;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+.cam-popup .cam-popup-top-buttons .cam-popup-top-button {
+    width: 15px;
+    height: 15px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
+}
+.cam-popup .cam-popup-top-buttons .cam-street-view-button {
+    background-image: url("/images/street-view.png");
+    background-size: 9px 15px;
+}
+.cam-popup .cam-popup-top-buttons .cam-gps-pointer-button {
+    background-image: url("/images/gps-pointer.png");
+}
+.cam-popup .cam-popup-top-buttons .cam-copy-gps-button {
+    background-image: url("/images/copy.png");
+}
+
+.cam-popup .cam-sections {
+    margin-top: 15px;
 }
 .cam-popup .cam-section .cam-section-title-block {
     display: flex;
@@ -127,11 +183,13 @@ h1 {
     font-size: 16px;
     width: 15px;
     height: 10px;
+    background-size: 15px 10px;
 }
 .cam-popup .cam-section .cam-section-title-block .arrow.down {
     width: 10px;
     height: 15px;
     padding: 0 2.5px;
+    background-size: 10px 15px;
 }
 
 
@@ -150,4 +208,69 @@ h1 {
     font-weight: bold;
     padding-left: 10px;
     padding-right: 5px; 
+}
+
+.mobile-menu-burger {
+    border-radius: 8px;
+    width: 62px;
+    height: 70px;
+
+    padding: 0 4px;
+
+    cursor: pointer;
+
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+
+    background-color: white;
+
+    border: 2px solid rgba(0,0,0,0.2);
+}
+.mobile-menu-burger div {
+    width: 100%;
+    height: 6px;
+    background-color: black;
+    border-radius: 4px;
+
+    position: relative;
+}
+
+.black-background {
+    display: none;
+    position: absolute;
+    z-index: 3;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background-color: black;
+    opacity: 0.65;
+}
+
+.temporary-message {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    transition: visibility 0s, opacity 1s;
+
+    position: absolute;
+    bottom: 10%;
+    z-index: 99;
+    text-align: center;
+
+    width: 100%;
+}
+.temporary-message.hidden {
+    display: block !important;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s linear 1s, opacity 1s;
+}
+.temporary-message .content {
+    position: relative;
+    display: inline-block;
+    background-color: #fff;
+    padding: 10 30px;
+    border-radius: 20px;
 }
