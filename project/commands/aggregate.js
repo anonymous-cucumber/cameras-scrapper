@@ -2,7 +2,7 @@ const fs = require("fs/promises");
 const lazyReadCsv = require("../libs/lazyReadCsv");
 const Camera = require("../models/Camera");
 const ImportHistory = require("../models/ImportHistory");
-const {destinationPointLat, destinationPointLon} = require("../libs/convert");
+const {destinationPointLat, destinationPointLon} = require("../libs/convertCoordinates");
 const {question} = require("../libs/ui");
 const getAllSources = require("../libs/getAllSources");
 const {deductDateRange} = require("../libs/datetimeMatching");
@@ -209,7 +209,7 @@ async function execute({files,sources}) {
                 infos: computedInfos
             })
             return {createds: {...createds, [fileSource]: (createds[fileSource]??0) + 1}, aggregateds};
-        }, ";", acc)
+        }, {acc})
     }
 
     console.log(acc);

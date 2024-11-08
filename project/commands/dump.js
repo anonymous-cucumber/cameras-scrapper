@@ -4,6 +4,7 @@ const fs = require("fs/promises");
 const Camera = require("../models/Camera");
 const {exportCameras} = require("../libs/dumpsCameras");
 const { generateHeaderFromModel, generateLinesFromModel } = require("../libs/csvFormatter");
+const lazyReadCsv = require("../libs/lazyReadCsv");
 
 function getArgs() {
     return {
@@ -13,9 +14,15 @@ function getArgs() {
 
             return {success: true, data: action.toLowerCase()};
         },
-        date: async (strDate,params) => {
-            if (params.action === "export")
-                return {success: true, params}
+        dateOrPartsize: async (strDateOrPartsize,params) => {
+            if (params.action === "export") {
+                const partSize = strDateOrPartsize !== undefined ? parseInt(strDateOrPartsize) : undefined;
+                if (partSize !== undefined && isNaN(partSize))
+                    return {success: false, msg: "You have to mention a number for partsize"}
+                return {success: true, params: {...params, partSize}}
+            }
+
+            const strDate = strDateOrPartsize;
 
             let dateRange = [null, null];
             if (strDate && strDate !== "all") {
@@ -52,37 +59,85 @@ function getArgs() {
 
             return {success: true, params: {...params, file: files[0].filename}}
         },
-        partSize: (partSize) => {
-            return {success: true, data: partSize};
+        partSize: (partSize, params) => {
+            if (params.action === "import") {
+                if (partSize !== undefined && isNaN(partSize = parseInt(partSize)))
+                    return {success: false, msg: "You have to mention a number for partsize"}
+
+                return {success: true, params: {...params, partSize}}
+            }
+            return {success: true, params}
         }
     }
 }
 
 function example() {
-    return "\nnode console.js dump export"+
-            "\nnode console.js dump import"+
-            "\nnode console.js dump import 2024-06-12"
+    return  "\nnode console.js dump export [part_size]"+
+            "\nnode console.js dump export 5000"+
+            "\nnode console.js dump import [date_search] [part_size]"+
+            "\nnode console.js dump import 2024-06-12"+
+            "\nnode console.js dump import 2024-06-12 500"
 }
 
 async function execute({action, file, partSize}) {
     switch (action) {
         case "export":
-            return export_dump(partSize);
+            return exportDump(partSize);
+        case "import":
+            return importDump(file, partSize);
     }
 }
 
-async function export_dump(partSize) {
+async function exportDump(partSize) {
     const outputFile = `dump_${new Date().toISOString()}.csv`;
 
     console.log(`Start exporting dump into file '${outputFile}'`);
 
     await fs.writeFile(dumpCsvPath+outputFile, generateHeaderFromModel(Camera)+"\n");
 
+    let lastPercent = null
+
     await exportCameras(partSize??10_000, async (cameras,n,total) => {
-        console.log(Math.min(Math.round((n/total)*100),100)+"%")
+        const percent = Math.min(Math.round((n/total)*100),100);
+        if (percent !== lastPercent) {
+            console.log(percent+"%")
+            lastPercent = percent;
+        }
         await fs.appendFile(dumpCsvPath+outputFile, generateLinesFromModel(Camera, cameras)+"\n")
     });
     console.log(`Dump exports to file '${outputFile}' finished !`)
+}
+
+async function importDump(file, parseSize) {
+    console.log(`Start importing cameras from file '${file}'`)
+    
+    const nbLines = await lazyReadCsv(dumpCsvPath+file, async (_acc,_obj,i) => {
+        return i+1;
+    })
+
+    if (parseSize == undefined)
+        parseSize = 50;
+
+    const dateA = new Date();
+
+    await lazyReadCsv(dumpCsvPath+file, async (cameras,camera,i) => {
+        cameras.push(camera);
+        if (cameras.length >= parseSize || i === nbLines-1) {
+            const n = i+1-cameras.length
+            console.log(`${n}/${nbLines} (${Math.round((n)/(nbLines)*100)}%)`)
+
+            await Promise.all(cameras.map(async camera => {
+                
+                if ((await Camera.countDocuments({_id: camera._id})) === 1)
+                    await Camera.deleteOne({_id: camera._id});
+                return Camera.create(camera)
+            }));
+            cameras = [];
+        }
+        return cameras;
+    }, {model: Camera, acc: []});
+
+    console.log(((new Date().getTime()-dateA.getTime())/1000)+" seconds")
 }
 
 
