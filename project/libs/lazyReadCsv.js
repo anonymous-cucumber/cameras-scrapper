@@ -1,6 +1,12 @@
 const {createReadStream} = require("fs");
+const { generateObjFromCsvLine } = require("./csvFormatter");
 
-function lazyReadCsv(path, callback, delimiter = ";", acc = null) {
+
+function lazyReadCsv(path, callback, params = {}) {
+    const delimiter = params.delimiter ?? ";";
+    let acc = params.acc ?? null;
+    const model = params.model ?? null;
+
     return new Promise((resolve,reject) => {
         const readableStream = createReadStream(path, 'utf8');
 
@@ -26,10 +32,7 @@ function lazyReadCsv(path, callback, delimiter = ";", acc = null) {
                 return;
             }
             const line = linesToBrowse.shift();
-            const obj = line.split(delimiter).reduce((acc,value,i) => ({
-                ...acc,
-                [header[i]]: value
-            }), {})
+            const obj = generateObjFromCsvLine(header, line, delimiter, model);
             acc = await callback(acc,obj,indexLine);
             indexLine += 1;
             await browseLines();

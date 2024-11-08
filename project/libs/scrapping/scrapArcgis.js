@@ -1,6 +1,6 @@
 const request = require("../request");
 const objToQuery = require("../objToQuery");
-const {wgs84WebMercatorToWgs84LatLon} = require("../convert");
+const {wgs84WebMercatorToWgs84LatLon} = require("../convertCoordinates");
 
 function queryAllMapLayer(url) {
     const query = {

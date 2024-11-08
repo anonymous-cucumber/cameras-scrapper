@@ -1,6 +1,6 @@
 const fs = require("fs/promises");
 const {fileExists} = require("../libs/fsUtils");
-const {scrappersPath,csvPath} = require("../paths");
+const {scrappersPath,scrapCsvPath} = require("../paths");
 
 function getArgs() {
     return {
@@ -39,7 +39,7 @@ async function execute({scrapper,scrapperName,additionalParams}) {
         }).join(";")    
     ).join("\n");
 
-    await fs.writeFile(`${csvPath}${scrapperName}${additionalParams ? "_"+additionalParams : ""}_${new Date().toISOString()}.csv`, csv);
+    await fs.writeFile(`${scrapCsvPath}${scrapperName}${additionalParams ? "_"+additionalParams : ""}_${new Date().toISOString()}.csv`, csv);
 
     console.log("csv file for '"+scrapperName+"' has been succesfully scrapped !")
 }
