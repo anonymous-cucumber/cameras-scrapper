@@ -3,6 +3,7 @@ const router = express.Router();
 const parseQueries = require("../libs/parseQueries");
 const Camera = require("../models/Camera");
 
+router.get("/total", (req, res) => Camera.countDocuments().then(total => res.json({total})))
 
 router.get("/export", async (req, res) => {
     const parsedQueries = await parseQueries(req.query,"exportCameras");
