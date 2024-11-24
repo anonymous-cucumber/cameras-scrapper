@@ -95,23 +95,26 @@ async function exportDump(partSize) {
 
     await fs.writeFile(dumpCsvPath+outputFile, generateHeaderFromModel(Camera)+"\n");
 
+    const dateA = new Date();
+
     let lastPercent = null
 
     await exportCameras(partSize??10_000, async (cameras,n,total) => {
-        const percent = Math.min(Math.round((n/total)*100),100);
+        const percent = Math.round((n/total)*100);
         if (percent !== lastPercent) {
-            console.log(percent+"%")
+            console.log(`${n}/${total} (${percent}%)`)
             lastPercent = percent;
         }
         await fs.appendFile(dumpCsvPath+outputFile, generateLinesFromModel(Camera, cameras)+"\n")
     });
-    console.log(`Dump exports to file '${outputFile}' finished !`)
+    const duration = (new Date().getTime()-dateA.getTime())/1000;
+    console.log(`Dump exports to file '${outputFile}' finished in ${duration}s !`)
 }
 
 async function importDump(file, parseSize) {
     console.log(`Start importing cameras from file '${file}'`)
     
-    const nbLines = await lazyReadCsv(dumpCsvPath+file, async (_acc,_obj,i) => {
+    const total = await lazyReadCsv(dumpCsvPath+file, async (_acc,_obj,i) => {
         return i+1;
     })
 
@@ -120,11 +123,17 @@ async function importDump(file, parseSize) {
 
     const dateA = new Date();
 
+    let lastPercent = null;
+
     await lazyReadCsv(dumpCsvPath+file, async (cameras,camera,i) => {
         cameras.push(camera);
-        if (cameras.length >= parseSize || i === nbLines-1) {
+        if (cameras.length >= parseSize || i === total-1) {
             const n = i+1-cameras.length
-            console.log(`${n}/${nbLines} (${Math.round((n)/(nbLines)*100)}%)`)
+            const percent = Math.round((n)/(total)*100);
+            if (percent !== lastPercent) {
+                console.log(`${n}/${total} (${percent}%)`);
+                lastPercent = percent;
+            }
 
             await Promise.all(cameras.map(async camera => {
                 
@@ -137,7 +146,8 @@ async function importDump(file, parseSize) {
         return cameras;
     }, {model: Camera, acc: []});
 
-    console.log(((new Date().getTime()-dateA.getTime())/1000)+" seconds")
+    const duration = (new Date().getTime()-dateA.getTime())/1000;
+    console.log(`Dump imports from file '${file}' finished in ${duration}s !`)
 }
 
 

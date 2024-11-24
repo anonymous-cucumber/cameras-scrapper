@@ -12,7 +12,7 @@ async function exportCameras(partSize = null, callback = null) {
     let skip = 0;
     while (skip < totalCameras) {
         const cameras = await Camera.find({}).limit(partSize).skip(skip);
-        skip += partSize;
+        skip = Math.min(skip+partSize, totalCameras);
         await callback(cameras, skip, totalCameras);
     }
 }
