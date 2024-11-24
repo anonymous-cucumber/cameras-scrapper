@@ -3,6 +3,7 @@ const {dumpCsvPath} = require("../../paths");
 const fs = require("fs/promises");
 const Camera = require("../../models/Camera");
 const lazyReadCsv = require("../../libs/lazyReadCsv");
+const {partSizeValidator} = require("../../libs/validators/commandValidators");
 
 function getArgs() {
     return {
@@ -42,12 +43,7 @@ function getArgs() {
 
             return {success: true, params: {...params, file: files[0].filename}}
         },
-        partSize: (partSize) => {
-            if (partSize !== undefined && isNaN(partSize = parseInt(partSize)))
-                return {success: false, msg: "You have to mention a number for partsize"}
-
-            return {success: true, data: partSize}
-        }
+        partSize: partSizeValidator
     }
 }
 

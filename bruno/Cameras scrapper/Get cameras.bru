@@ -1,0 +1,17 @@
+meta {
+  name: Get cameras
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base}}/api/cameras?bbox=-17.687988281250004,43.08493742707595,22.565917968750004,51.16556659836182&width=1832&height=542
+  body: none
+  auth: none
+}
+
+params:query {
+  bbox: -17.687988281250004,43.08493742707595,22.565917968750004,51.16556659836182
+  width: 1832
+  height: 542
+}

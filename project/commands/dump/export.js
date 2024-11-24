@@ -3,15 +3,11 @@ const fs = require("fs/promises");
 const Camera = require("../../models/Camera");
 const {exportCameras} = require("../../libs/dumpsCameras");
 const { generateHeaderFromModel, generateLinesFromModel } = require("../../libs/csvFormatter");
+const {partSizeValidator} = require("../../libs/validators/commandValidators");
 
 function getArgs() {
     return {
-        partSize: async (partSize) => {
-            if (partSize !== undefined && isNaN(partSize = parseInt(partSize)))
-                return {success: false, msg: "You have to mention a number for partsize"}
-
-            return {success: true, data: partSize}
-        }
+        partSize: partSizeValidator
     }
 }
 
