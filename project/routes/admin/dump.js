@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const parseQueries = require("../libs/parseQueries");
-const Camera = require("../models/Camera");
+const parseQueries = require("../../libs/parseQueries");
+const Camera = require("../../models/Camera");
 
 router.get("/total", (req, res) => Camera.countDocuments().then(total => res.json({total})))
 

@@ -5,12 +5,17 @@ meta {
 }
 
 get {
-  url: {{base}}/api/dump/export?rows=5000&page=1
+  url: {{base}}/api/admin/dump/export?rows=5000&page=1
   body: none
-  auth: none
+  auth: basic
 }
 
 params:query {
   rows: 5000
   page: 1
+}
+
+auth:basic {
+  username: admin
+  password: abcd
 }
