@@ -1,9 +1,9 @@
-const {dumpCsvPath} = require("../../paths");
+const {dumpCsvPath} = require("../../../paths");
 const fs = require("fs/promises");
-const Camera = require("../../models/Camera");
-const {exportLocalCameras} = require("../../libs/dumpsCameras");
-const { generateHeaderFromModel, generateLinesFromModel } = require("../../libs/csvFormatter");
-const {partSizeValidator} = require("../../libs/validators/commandValidators");
+const Camera = require("../../../models/Camera");
+const {exportRemoteCameras} = require("../../../libs/dumpsCameras");
+const { generateHeaderFromModel, generateLinesFromModel } = require("../../../libs/csvFormatter");
+const {partSizeValidator} = require("../../../libs/validators/commandValidators");
 
 function getArgs() {
     return {
@@ -17,7 +17,8 @@ function example() {
 }
 
 async function execute({partSize}) {
-    const outputFile = `dump_${new Date().toISOString()}.csv`;
+    await exportRemoteCameras(partSize, null)
+    /*const outputFile = `dump_${new Date().toISOString()}.csv`;
 
     console.log(`Start exporting dump into file '${outputFile}'`);
 
@@ -27,7 +28,7 @@ async function execute({partSize}) {
 
     let lastPercent = null
 
-    await exportLocalCameras(partSize??10_000, async (cameras,n,total) => {
+    await exportCameras(partSize??10_000, async (cameras,n,total) => {
         const percent = Math.round((n/total)*100);
         if (percent !== lastPercent) {
             console.log(`${n}/${total} (${percent}%)`)
@@ -36,7 +37,7 @@ async function execute({partSize}) {
         await fs.appendFile(dumpCsvPath+outputFile, generateLinesFromModel(Camera, cameras)+"\n")
     });
     const duration = (new Date().getTime()-dateA.getTime())/1000;
-    console.log(`Dump exports to file '${outputFile}' finished in ${duration}s !`)
+    console.log(`Dump exports to file '${outputFile}' finished in ${duration}s !`)*/
 }
 
 
