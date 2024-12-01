@@ -30,7 +30,7 @@ router.post("/import", async (req, res) => {
         })
     )
 
-    res.sendStatus(204)
+    res.sendStatus(201)
 })
 
 module.exports = router;

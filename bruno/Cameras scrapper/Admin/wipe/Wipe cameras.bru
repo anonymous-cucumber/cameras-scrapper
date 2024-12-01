@@ -1,0 +1,16 @@
+meta {
+  name: Wipe cameras
+  type: http
+  seq: 1
+}
+
+delete {
+  url: {{base}}/api/admin/wipe/cameras
+  body: none
+  auth: basic
+}
+
+auth:basic {
+  username: admin
+  password: abcd
+}
