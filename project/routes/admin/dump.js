@@ -17,5 +17,20 @@ router.get("/export", async (req, res) => {
     res.json(cameras);
 });
 
+router.post("/import", async (req, res) => {
+    if (!(req.body instanceof Array))
+        return res.sendStatus(400);
+
+    const cameras = req.body;
+    await Promise.all(
+        cameras.map(async camera => {
+            if ((await Camera.countDocuments({_id: camera._id})) === 1)
+                await Camera.deleteOne({_id: camera._id});
+            return Camera.create(camera)
+        })
+    )
+
+    res.sendStatus(204)
+})
 
 module.exports = router;

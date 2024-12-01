@@ -1,7 +1,7 @@
 function adminAuthMiddleware(req, res, next) {
     const { authorization } = req.headers;
 
-    if (authorization === null)
+    if (!authorization)
         return res.sendStatus(401);
 
     const [method, b64login] = authorization.split(" ");
