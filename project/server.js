@@ -3,9 +3,11 @@ const Camera = require("./models/Camera");
 const getSearchBBoxes = require("./libs/getSearchBBoxes");
 const parseQueries = require("./libs/parseQueries");
 const promiseConcurrency = require("./libs/promiseConcurrency");
+const {logConnectionsMiddleware} = require("./middlewares");
 
 const app = express();
 
+app.use(logConnectionsMiddleware);
 app.use(express.static('public'));
 
 

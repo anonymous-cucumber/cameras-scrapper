@@ -1,4 +1,5 @@
 project/CSVs_*/*.csv
 project/node_modules
+project/logs/*.log
 mongodb/data
 .env
