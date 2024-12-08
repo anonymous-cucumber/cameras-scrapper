@@ -1,5 +1,5 @@
 import { searchCameras, setPopupPrototype } from "./fetcher.js";
-import { initAndListenFilters, filtersState, onMobileMenuCloseButton, onMobileMenuOpenButton } from "./filters.js";
+import { initAndListenFilters, filtersState, onMobileMenuCloseButton, onMobileMenuOpenButton, onLegendHeaderClick } from "./filters.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     setPopupPrototype();
@@ -28,4 +28,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelector(".mobile-menu-burger").addEventListener("click", onMobileMenuOpenButton)
     document.querySelector(".close-mobile-menu-button").addEventListener("click", onMobileMenuCloseButton)
+    document.querySelector(".legend-header").addEventListener("click", onLegendHeaderClick)
 })

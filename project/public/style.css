@@ -48,6 +48,9 @@ h1 {
     background-position: center;
     background-repeat: no-repeat;
 }
+.white-arrow {
+    background-image: url("/images/white-arrow.png");
+}
 
 .menu .close-mobile-menu-button {
     display: none;
@@ -92,7 +95,7 @@ h1 {
     gap: 10px;
     flex-direction: column;
     position: absolute;
-    z-index: 2;
+    z-index: 3;
     background-color: white;
     padding: 5px;
     border-radius: 0 0 10px 10px;
@@ -236,8 +239,10 @@ h1 {
     position: relative;
 }
 
-.black-background {
+#menu-black-background {
     display: none;
+}
+.black-background {
     position: absolute;
     z-index: 3;
     height: 100%;
@@ -273,4 +278,58 @@ h1 {
     background-color: #fff;
     padding: 10 30px;
     border-radius: 20px;
+}
+
+.legend {
+    position: absolute;
+    left: 10px;
+    top: 230px;
+    z-index: 2;
+    color: #fff;
+    padding: 2.5px 5px;
+    width: 160px;
+}
+.legend-header {
+    padding: 0 25px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    cursor: pointer;
+}
+.legend-header .arrow {
+    width: 13px;
+    height: 10px;;
+    background-size: 13px 10px;
+}
+.legend-header .arrow.down {
+    background-size: 10px 13px;
+    width: 10px;
+    height: 13px;
+    padding: 0 2.5px;
+}
+
+.legend-items, .legend-header {
+    z-index: 4;
+    position: relative;
+}
+
+.legend-items {
+    display: none;
+}
+
+.legend-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+}
+.legend-item img {
+    width: 25px;
+    height: 25px;
+}
+.legend-item p {
+    font-size: 12px;
+    font-weight: bold;
 }

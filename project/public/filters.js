@@ -72,6 +72,7 @@ function generateFilterSection(filterName, filterObj, onFilter) {
                     continue;
                 filterObj.expanded = false
             }
+            document.querySelector(".legend").style.display = "none";
         }
         filterObj.expanded = !filterObj.expanded;
         closeOpenFilterSections();
@@ -131,15 +132,26 @@ export function onMobileMenuCloseButton() {
 
         filterObj.expanded = false;
     }
-    if (anyFilterSectionClosed)
+    if (anyFilterSectionClosed) {
+        document.querySelector(".legend").style.display = "block";
         return closeOpenFilterSections();
+    }
 
     document.querySelector(".menu").style.display = "none";
-    document.querySelector(".black-background").style.display = "none";
+    document.querySelector("#menu-black-background").style.display = "none";
 }
 export function onMobileMenuOpenButton() {
     document.querySelector(".menu").style.display = "block";
-    document.querySelector(".black-background").style.display = "block";
+    document.querySelector("#menu-black-background").style.display = "block";
+}
+
+export function onLegendHeaderClick() {
+    if (isMobile) return;
+    const legendItems = document.querySelector(".legend-items");
+    const headerArrow = document.querySelector(".legend-header .arrow");
+
+    legendItems.style.display = legendItems.style.display === "block" ? "none" : "block";
+    headerArrow.classList[legendItems.style.display === "block" ? "add" : "remove"]("down");
 }
 
 export function initAndListenFilters(map) {
