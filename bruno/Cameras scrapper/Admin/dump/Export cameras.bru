@@ -1,0 +1,21 @@
+meta {
+  name: Export cameras
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base}}/api/admin/dump/export?rows=5000&page=0
+  body: none
+  auth: basic
+}
+
+params:query {
+  rows: 5000
+  page: 0
+}
+
+auth:basic {
+  username: admin
+  password: abcd
+}

@@ -1,16 +1,21 @@
 const http = require("http");
 const https = require("https");
 
-function request(url,params) {
+function request(fullUrl, params) {
     return new Promise(resolve => {
         const protos = {https,http};
-        const proto = protos[url.split("://")[0] ?? "http"];
-        params = {
-            ...params,
-            host: url.split("://")[1].split("/")[0],
-            path: "/"+url.split("://")[1].split("/").slice(1).join("/")
-        };
-        const req = proto.request(params, res => {
+
+        const [proto, url] = fullUrl.split("://");
+
+        const [host, port] = url.split("/")[0].split(":")
+
+        const path = url.split("/").slice(1).join("/")
+
+
+        const protoLib = protos[proto ?? "http"];
+
+        params = { ...params, host, port, path };
+        const req = protoLib.request(params, res => {
             let data = [];
             res.on("data", chunk => data.push(chunk));
             res.on("end", () => {
@@ -18,7 +23,14 @@ function request(url,params) {
                     data,
                     data.reduce((acc, item) => acc + item.length, 0)
                 ).toString();
-                resolve(params.getHeaders ? {headers: res.headers, data: resData} : resData);
+
+                const result = (params.getHeaders || params.getCode) ? {data: resData} : resData;
+                if (params.getHeaders)
+                    result.headers = res.headers;
+                if (params.getCode)
+                    result.code = res.statusCode
+
+                resolve(result);
             });
         });
         if (params.body)

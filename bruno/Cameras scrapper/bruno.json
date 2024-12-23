@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Cameras scrapper",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

@@ -1,9 +1,10 @@
-const Camera = require("../../models/Camera");
-const { dumpCsvPath } = require("../../paths");
-const lazyReadCsv = require("../../libs/lazyReadCsv");
-const { partSizeValidator } = require("../../libs/validators/commandValidators");
-const { dateToDateRangeValidator } = require("../../libs/validators/commandValidators");
-const { postArgsFindDumpFiles } = require("../../libs/commandsPostArgs");
+const Camera = require("../../../models/Camera");
+const { dumpCsvPath } = require("../../../paths");
+const lazyReadCsv = require("../../../libs/lazyReadCsv");
+const { partSizeValidator } = require("../../../libs/validators/commandValidators");
+const { dateToDateRangeValidator } = require("../../../libs/validators/commandValidators");
+const { postArgsFindDumpFiles } = require("../../../libs/commandsPostArgs");
+const { importRemoteCameras } = require ("../../../libs/dumpsCameras");
 
 function getArgs() {
     return {
@@ -46,14 +47,7 @@ async function execute({file, partSize}) {
                 lastPercent = percent;
             }
 
-            await Promise.all(cameras.map(async camera => {
-                
-                if ((await Camera.countDocuments({_id: camera._id})) === 1)
-                    await Camera.deleteOne({_id: camera._id});
-                
-                return Camera.create(camera)
-
-            }));
+            await importRemoteCameras(cameras);
             cameras = [];
         }
         return cameras;

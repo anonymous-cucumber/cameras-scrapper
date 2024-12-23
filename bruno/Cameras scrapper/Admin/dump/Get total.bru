@@ -1,0 +1,16 @@
+meta {
+  name: Get total
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base}}/api/admin/dump/total
+  body: none
+  auth: basic
+}
+
+auth:basic {
+  username: admin
+  password: abcd
+}
