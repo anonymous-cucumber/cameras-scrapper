@@ -17,10 +17,9 @@ function example() {
 }
 
 async function execute({partSize}) {
-    await exportRemoteCameras(partSize, null)
-    /*const outputFile = `dump_${new Date().toISOString()}.csv`;
+    const outputFile = `dump_remote_${new Date().toISOString()}.csv`;
 
-    console.log(`Start exporting dump into file '${outputFile}'`);
+    console.log(`Start remote exporting dump into file '${outputFile}'`);
 
     await fs.writeFile(dumpCsvPath+outputFile, generateHeaderFromModel(Camera)+"\n");
 
@@ -28,7 +27,7 @@ async function execute({partSize}) {
 
     let lastPercent = null
 
-    await exportCameras(partSize??10_000, async (cameras,n,total) => {
+    await exportRemoteCameras(partSize??1000, async (cameras,n,total) => {
         const percent = Math.round((n/total)*100);
         if (percent !== lastPercent) {
             console.log(`${n}/${total} (${percent}%)`)
@@ -37,7 +36,7 @@ async function execute({partSize}) {
         await fs.appendFile(dumpCsvPath+outputFile, generateLinesFromModel(Camera, cameras)+"\n")
     });
     const duration = (new Date().getTime()-dateA.getTime())/1000;
-    console.log(`Dump exports to file '${outputFile}' finished in ${duration}s !`)*/
+    console.log(`Remote dump exports to file '${outputFile}' finished in ${duration}s !`)
 }
 
 

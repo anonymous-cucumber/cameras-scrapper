@@ -18,40 +18,42 @@ async function exportLocalCameras(partSize = null, callback = null) {
     }
 }
 
-const {REMOTE_PROJECT, REMOTE_ADMIN_API_TOKEN} = process.env;
+const {REMOTE_PROJECT, CLIENT_SIDE_ADMIN_API_TOKEN} = process.env;
 
-const Authorization = "Basic "+Buffer.from(`admin:${REMOTE_ADMIN_API_TOKEN}`).toString('base64')
+const Authorization = "Basic "+Buffer.from(`admin:${CLIENT_SIDE_ADMIN_API_TOKEN}`).toString('base64')
 
 async function getRemoteTotalCameras() {
     const {code, data} = await request(`${REMOTE_PROJECT}/api/admin/dump/total`, {
         getCode: true,
         headers: { Authorization }
     });
+
+    if (code === 401)
+        throw new Error("Access to remote project failed, please check you API key");
     
-    return {code, data: code === 200 ? JSON.parse(data): data}
+    return {code, data: code === 200 ? JSON.parse(data) : data}
 }
-async function getRemoteCameras() {
-    const {code, data} = await request(`${REMOTE_PROJECT}/api/admin/dump/total`, {
+async function getRemoteCameras(rows, page) {
+    const {code, data} = await request(`${REMOTE_PROJECT}/api/admin/dump/export?rows=${rows}&page=${page}`, {
         getCode: true,
         headers: { Authorization }
     });
+
+    if (code === 401)
+        throw new Error("Access to remote project failed, please check you API key");
     
     return {code, data: code === 200 ? JSON.parse(data): data}
 }
 
 async function exportRemoteCameras(partSize, callback) {
-    const {code, data} = await getRemoteTotalCameras();
-    if (code === 401)
-        throw "Access to remote project failed, please check you API key"
+    const {data: {total: totalCameras}} = await getRemoteTotalCameras();;
     
-    const {total: totalCameras} = data;
-    
-    
-    let skip = 0;
-    while (skip < totalCameras) {
-        const {code, data} = await Camera.find({}).limit(partSize).skip(skip);
-        skip = Math.min(skip+partSize, totalCameras);
-        await callback(cameras, skip, totalCameras);
+    let page = 0;
+    while (page*partSize < totalCameras) {
+        const {data: cameras} = await getRemoteCameras(partSize, page);
+
+        page += 1;
+        await callback(cameras, page*partSize, totalCameras);
     }
 }
 

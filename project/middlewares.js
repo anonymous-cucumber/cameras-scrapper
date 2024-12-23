@@ -9,7 +9,7 @@ function adminAuthMiddleware(req, res, next) {
         return res.sendStatus(400)
 
     const [user, password] = Buffer.from(b64login, 'base64').toString().split(":");
-    if (user !== "admin" || password !== process.env.LOCAL_ADMIN_API_TOKEN)
+    if (user !== "admin" || password !== process.env.SERVER_SIDE_ADMIN_API_TOKEN)
         return res.sendStatus(401);
 
     next();

@@ -17,7 +17,7 @@ async function getCommand(args = process.argv.slice(2), base = `${__dirname}/com
     return getCommand(args, base+command+"/", deep+1)
 }
 
-(async() => {
+(async () => {
     process.dontLog = true;
 
     const {getArgs, example, execute, deep} = await getCommand();
