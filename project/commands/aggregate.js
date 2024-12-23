@@ -5,8 +5,8 @@ const ImportHistory = require("../models/ImportHistory");
 const {destinationPointLat, destinationPointLon} = require("../libs/convertCoordinates");
 const {question} = require("../libs/ui");
 const getAllSources = require("../libs/getAllSources");
-const {deductDateRange} = require("../libs/datetimeMatching");
 const {scrapCsvPath} = require("../paths");
+const { dateToDateRangeValidator } = require("../libs/validators/commandValidators");
 
 const publicRadius = 10; // 10 metters;
 const privateRadius = 3; // 3 metters;
@@ -26,54 +26,48 @@ function getArgs() {
 
             return {success: true, data: sources};
         },
-        date: (strDate,params) => {
-            if (strDate === "all")
-                strDate = undefined;
-
-            const dateRange = strDate ? deductDateRange(strDate) : [null,null];
-
-            if (strDate && dateRange === null)
-                return {success: false, msg: `"${strDate}" is not a valid date`};
-
-            return {success: true, params: {...params, dateRange}}
-        },
-        additionalParams: async (additionalParams,params) => {
-            const {sources, dateRange: [date, dateB]} = params;
-
-            const files = await fs.readdir(scrapCsvPath).then(files =>
-                files
-                    .filter(filename => filename !== ".keep")
-                    .map(filename => {
-                        const splittedFilename = filename.split(".csv")[0].split("_");
-
-                        const fileSource = splittedFilename[0];
-                        const filestrDate = splittedFilename[splittedFilename.length-1];
-                        const fileDate = new Date(filestrDate);
-                        const fileAdditionalParams = splittedFilename.length === 3 ? splittedFilename[1] : undefined; 
-
-                        return {filename, fileSource, fileDate, fileAdditionalParams}
-                    })
-                    .filter(({fileSource, fileAdditionalParams, fileDate}) => {
-                        if (!sources.includes(fileSource))
-                            return false;
-
-                        if (
-                            (additionalParams && additionalParams !== "nothing" && additionalParams !== fileAdditionalParams) || 
-                            (additionalParams === "nothing" && fileAdditionalParams)
-                        )
-                            return false;
-
-                        if (date === null)
-                            return true;
-
-                        return fileDate.getTime() >= date.getTime() && fileDate.getTime() < dateB.getTime()
-                    })    
-            )
-            if (files.length === 0)
-                return {success: false, msg: "Nothing file has been found with your query"}
-            return {success: true, params: {...params, files}};
+        date: dateToDateRangeValidator,
+        additionalParams: (additionalParams) => {
+            return {success: true, data: additionalParams};
         }
     }
+}
+
+async function postArgs(params) {
+    const {sources, dateRange: [date, dateB], additionalParams} = params;
+
+    const files = await fs.readdir(scrapCsvPath).then(files =>
+        files
+            .filter(filename => filename !== ".keep")
+            .map(filename => {
+                const splittedFilename = filename.split(".csv")[0].split("_");
+
+                const fileSource = splittedFilename[0];
+                const filestrDate = splittedFilename[splittedFilename.length-1];
+                const fileDate = new Date(filestrDate);
+                const fileAdditionalParams = splittedFilename.length === 3 ? splittedFilename[1] : undefined; 
+
+                return {filename, fileSource, fileDate, fileAdditionalParams}
+            })
+            .filter(({fileSource, fileAdditionalParams, fileDate}) => {
+                if (!sources.includes(fileSource))
+                    return false;
+
+                if (
+                    (additionalParams && additionalParams !== "nothing" && additionalParams !== fileAdditionalParams) || 
+                    (additionalParams === "nothing" && fileAdditionalParams)
+                )
+                    return false;
+
+                if (date === null)
+                    return true;
+
+                return fileDate.getTime() >= date.getTime() && fileDate.getTime() < dateB.getTime()
+            })    
+    )
+    if (files.length === 0)
+        return {success: false, msg: "Nothing file has been found with your query"}
+    return {success: true, params: {...params, files}};
 }
 
 function example() {
@@ -215,4 +209,4 @@ async function execute({files,sources}) {
     console.log(acc);
 }
 
-module.exports = {getArgs,example,execute}
+module.exports = {getArgs, example, execute, postArgs}

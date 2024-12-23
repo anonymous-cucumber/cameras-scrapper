@@ -30,8 +30,11 @@ async function getRemoteTotalCameras() {
 
     if (code === 401)
         throw new Error("Access to remote project failed, please check you API key");
+
+    if (code !== 200)
+        throw new Error(`Error when accessing remote project ; code => ${code} \n\nbody => \n${data}`)
     
-    return {code, data: code === 200 ? JSON.parse(data) : data}
+    return {code, data: JSON.parse(data)}
 }
 async function getRemoteCameras(rows, page) {
     const {code, data} = await request(`${REMOTE_PROJECT}/api/admin/dump/export?rows=${rows}&page=${page}`, {
@@ -41,8 +44,11 @@ async function getRemoteCameras(rows, page) {
 
     if (code === 401)
         throw new Error("Access to remote project failed, please check you API key");
+
+    if (code !== 200)
+        throw new Error(`Error when accessing remote project ; code => ${code} \n\nbody => \n${data}`)
     
-    return {code, data: code === 200 ? JSON.parse(data): data}
+    return {code, data: JSON.parse(data)}
 }
 
 async function exportRemoteCameras(partSize, callback) {
@@ -57,4 +63,24 @@ async function exportRemoteCameras(partSize, callback) {
     }
 }
 
-module.exports = {exportLocalCameras, exportRemoteCameras};
+async function importRemoteCameras(cameras) {
+    const {code, data} = await request(`${REMOTE_PROJECT}/api/admin/dump/import`, {
+        getCode: true,
+        headers: { 
+            Authorization,
+            'content-type': 'application/json'
+        },
+        method: "POST",
+        body: JSON.stringify(cameras)
+    });
+
+    if (code === 401)
+        throw new Error("Access to remote project failed, please check you API key");
+
+    if (code !== 201)
+        throw new Error(`Error when accessing remote project ; code => ${code} \n\nbody => \n${data}`)
+
+    return true;
+}
+
+module.exports = {exportLocalCameras, exportRemoteCameras, importRemoteCameras};
