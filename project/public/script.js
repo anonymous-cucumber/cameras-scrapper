@@ -1,4 +1,4 @@
-import { searchCameras, setPopupPrototype } from "./fetcher.js";
+import { searchAndShowCameras, setPopupPrototype } from "./fetcher.js";
 import { initAndListenFilters, filtersState, onMobileMenuCloseButton, onMobileMenuOpenButton, onLegendHeaderClick } from "./filters.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -14,14 +14,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     L.Control.geocoder().addTo(map);
 
-    searchCameras(map,filtersState);
+    searchAndShowCameras(map,filtersState);
     map.on("moveend", () => {
         const zoom = map.getZoom();
         const {lat, lng} = map.getCenter()
         
         localStorage.setItem("currentMapState", JSON.stringify({zoom, lat, lng}))
 
-        searchCameras(map,filtersState);
+        searchAndShowCameras(map,filtersState);
     })
 
     initAndListenFilters(map);

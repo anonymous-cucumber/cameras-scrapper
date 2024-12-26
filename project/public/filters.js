@@ -1,4 +1,4 @@
-import { searchCameras } from "./fetcher.js";
+import { searchAndShowCameras } from "./fetcher.js";
 import labels from "./labels.js";
 import { isMobile } from "./libs.js";
 
@@ -166,7 +166,7 @@ export function initAndListenFilters(map) {
     for (const [filterName,filterObj] of Object.entries(filtersState)) {
         filterSectionsDiv.appendChild(generateFilterSection(filterName, filterObj, (filtered) => {
             filterObj.value = filtered;
-            searchCameras(map,filtersState)
+            searchAndShowCameras(map,filtersState)
         }))   
     }
 }

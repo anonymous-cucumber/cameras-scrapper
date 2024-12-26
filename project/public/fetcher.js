@@ -35,7 +35,7 @@ function getCameraImage(camera) {
     return "cctvGrey.png"
 }
 
-export function searchCameras(map, filters) {
+export function searchAndShowCameras(map, filters) {
     if (timeout !== null) {
         clearTimeout(timeout);
     }
@@ -45,13 +45,17 @@ export function searchCameras(map, filters) {
             abortController.abort();
             abortController = null;
         }
-
-        fetchCameras(map, filters);
+        searchCameras(map, filters)
+        .then((datas) => showCameras(datas, map))
     }, 500)
 }
 
-function fetchCameras(map, filters){
 
+function fetchCamera(id) {
+    return fetch("/api/cameras/"+id).then(res => res.json());
+}
+
+function searchCameras(map, filters) {
     const {lat: lat2, lng: lng1} = map.containerPointToLatLng(L.point(0, 0))
 
     const {offsetWidth, offsetHeight} = document.getElementById("map")
@@ -68,65 +72,72 @@ function fetchCameras(map, filters){
 
     abortController = new AbortController();
 
-    fetch("/api/cameras?"+query, {signal: abortController.signal})
+    return fetch("/api/cameras?"+query, {signal: abortController.signal})
         .then(res => {
             abortController = null;
             return res.json();
         })
-        .then(datas => {
-            cleanMarkers(map)
-
-            for (const data of datas) {
-                const {lat, lon, type, count} = data
-                const marker = new L.Marker({lat, lng: lon}, {
-                    icon: type === "zone" ? 
-                        new L.DivIcon({ html: `<div class="zone-tooltip">${count}</div>`}) : 
-                        new L.Icon({
-                            iconUrl: `/images/${getCameraImage(data)}`,
-                            iconSize: [25, 25]
-                        })
-                    })
-                        
-                if (type === "zone") {
-                    const {lat1,lon1,lat2,lon2} = data
-                    marker.on("click", () => {
-                        if (currentPolygon !== null) {
-                            map.removeLayer(currentPolygon);
-                            currentPolygon = null;
-                            if (!Object.entries(currentPolygonCoordinates).some(([key,value]) => data[key] !== value))
-                                return;
-                        }
-                        currentPolygon = L.geoJSON({
-                            coordinates: [
-                                [
-                                    [lon1,lat1], [lon2,lat1],
-                                    [lon2,lat2], [lon1,lat2]
-                                ]
-                            ],
-                            type: "Polygon"
-                        }).addTo(map);
-                        currentPolygonCoordinates = {lat1,lon1,lat2,lon2}
-                    });
-                }
-                if (type === "camera") {
-                    marker.on("click", () => {
-                        if (!popupByCamId[data._id]) {
-                            popupByCamId[data._id] = L.popup()
-                            .setLatLng({lat, lng: lon})
-                            .setContent(generatePopup(data))
-                        }
-
-                        popupByCamId[data._id].openOn(map)
-                    })
-                }
-                map.addLayer(marker);
-
-                markers.push(marker);
-            }
-
-            document.querySelector(".loading-text").innerText = "Chargé !"
-        })
 }
+
+function showCameras(datas, map){
+    cleanMarkers(map)
+
+    for (const data of datas) {
+        const {lat, lon, type, count} = data
+        const marker = new L.Marker({lat, lng: lon}, {
+            icon: type === "zone" ? 
+                new L.DivIcon({ html: `<div class="zone-tooltip">${count}</div>`}) : 
+                new L.Icon({
+                    iconUrl: `/images/${getCameraImage(data)}`,
+                    iconSize: [25, 25]
+                })
+            })
+                        
+        if (type === "zone") {
+            const {lat1,lon1,lat2,lon2} = data
+            marker.on("click", () => {
+                if (currentPolygon !== null) {
+                    map.removeLayer(currentPolygon);
+                    currentPolygon = null;
+                    if (!Object.entries(currentPolygonCoordinates).some(([key,value]) => data[key] !== value))
+                        return;
+                }
+                currentPolygon = L.geoJSON({
+                    coordinates: [
+                        [
+                            [lon1,lat1], [lon2,lat1],
+                            [lon2,lat2], [lon1,lat2]
+                        ]
+                    ],
+                    type: "Polygon"
+                }).addTo(map);
+                currentPolygonCoordinates = {lat1,lon1,lat2,lon2}
+            });
+        }
+        if (type === "camera") {
+            marker.on("click", async () => {
+                if (!popupByCamId[data._id]) {
+
+                    const camera = await fetchCamera(data._id);
+
+                    console.log(camera)
+
+                    popupByCamId[data._id] = L.popup()
+                    .setLatLng({lat, lng: lon})
+                    .setContent(generatePopup(camera))
+                }
+
+                popupByCamId[data._id].openOn(map)
+            })
+        }
+        map.addLayer(marker);
+
+        markers.push(marker);
+    }
+
+    document.querySelector(".loading-text").innerText = "Chargé !"
+}
+
 function cleanMarkers(map) {
     if (currentPolygon !== null) {
         map.removeLayer(currentPolygon);

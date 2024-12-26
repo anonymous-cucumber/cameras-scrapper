@@ -7,6 +7,26 @@ const promiseConcurrency = require("../libs/promiseConcurrency");
 
 const pixelPartSize = 100;
 const showCamerasLimit = 20;
+
+router.get("/:id", async (req, res) => {
+    let camera = null;
+
+    try {
+        camera = await Camera.findById(req.params.id);
+    } catch (e) {
+        if (e.name === "CastError")
+            return res.sendStatus(404)
+        
+        console.log(e);
+        return res.sendStatus(500)
+    }
+
+    if (camera === null)
+        return res.sendStatus(404);
+
+    res.json(camera)
+});
+
 router.get("/", async (req,res) => {
     const parsedQueries = await parseQueries(req.query,"getCameras");
     if (parsedQueries === null)
@@ -54,7 +74,15 @@ router.get("/", async (req,res) => {
                     }
                 
                 let cameras = await Camera.find(specificCameraQuery);
-                return cameras.map(camera => ({...camera._doc, type: "camera"}))
+                return cameras.map(camera => ({
+                    _id: camera._doc._id,
+                    lat: camera._doc.lat,
+                    lon: camera._doc.lon,
+                    type: "camera",
+                    infos: {
+                        type: camera._doc.infos.type
+                    }
+                }))
             }),
         process.env.NB_PARRALLEL_CAMERA_FETCHING ?? 100
     )
