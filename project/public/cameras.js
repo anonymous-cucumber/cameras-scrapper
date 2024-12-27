@@ -1,12 +1,18 @@
 import labels from "./labels.js";
 import { showTemporaryMessage } from "./libs.js";
 
-let markers = [];
+let markedDatas = {};
 let currentPolygon = null;
 let currentPolygonCoordinates = null;
 
 let abortController = null;
 let timeout = null;
+
+let currentBbox = null;
+let prevBbox = null;
+
+let currentZoom = null;
+let prevZoom = null;
 
 let popupPrototype = null;
 export function setPopupPrototype() {
@@ -55,16 +61,28 @@ function fetchCamera(id) {
     return fetch("/api/cameras/"+id).then(res => res.json());
 }
 
-function searchCameras(map, filters) {
+
+function getCurrentBbox(map) {
     const {lat: lat2, lng: lng1} = map.containerPointToLatLng(L.point(0, 0))
 
     const {offsetWidth, offsetHeight} = document.getElementById("map")
     const {lat: lat1, lng: lng2} = map.containerPointToLatLng(L.point(offsetWidth, offsetHeight))
 
+    return [lng1,lat1,lng2,lat2];
+}
+
+function searchCameras(map, filters) {
+
+    currentBbox = getCurrentBbox(map);
+    currentZoom = map.getZoom();
+    
+    const stringifiedCurrentBbox = currentBbox.join(",");
+    const stringifiedPrevBbox = prevBbox !== null ? prevBbox.join(",") : "";
+
     const query = stringifyQuery({
-        bbox: [lng1,lat1,lng2,lat2].join(","),
-        width: offsetWidth,
-        height: offsetHeight,
+        bbox: stringifiedCurrentBbox,
+        prevBbox: (currentZoom === prevZoom && stringifiedCurrentBbox !== stringifiedPrevBbox) ? stringifiedPrevBbox : undefined,
+        zoom: currentZoom,
         ...Object.entries(filters).reduce((acc,[key,{value}]) => ({...acc, [key]: value}), {})
     })
 
@@ -80,7 +98,7 @@ function searchCameras(map, filters) {
 }
 
 function showCameras(datas, map){
-    cleanMarkers(map)
+    cleanMarkers(map);
 
     for (const data of datas) {
         const {lat, lon, type, count} = data
@@ -92,10 +110,13 @@ function showCameras(datas, map){
                     iconSize: [25, 25]
                 })
             })
-                        
+            
+        let key = null;
+            
         if (type === "zone") {
             const {lat1,lon1,lat2,lon2} = data
             marker.on("click", () => {
+                console.log(data)
                 if (currentPolygon !== null) {
                     map.removeLayer(currentPolygon);
                     currentPolygon = null;
@@ -113,14 +134,13 @@ function showCameras(datas, map){
                 }).addTo(map);
                 currentPolygonCoordinates = {lat1,lon1,lat2,lon2}
             });
+            key = "zone-"+data.zoneId;
         }
         if (type === "camera") {
             marker.on("click", async () => {
                 if (!popupByCamId[data._id]) {
 
                     const camera = await fetchCamera(data._id);
-
-                    console.log(camera)
 
                     popupByCamId[data._id] = L.popup()
                     .setLatLng({lat, lng: lon})
@@ -129,12 +149,22 @@ function showCameras(datas, map){
 
                 popupByCamId[data._id].openOn(map)
             })
-        }
-        map.addLayer(marker);
 
-        markers.push(marker);
+            key = "cam-"+data.lat+"-"+data.lon;
+        }
+
+        if (key && markedDatas[key]) {
+            map.removeLayer(markedDatas[key].marker);
+            delete markedDatas[key];
+        }
+
+        markedDatas[key] = {marker, data};
+
+        map.addLayer(marker);
     }
 
+    prevBbox = currentBbox;
+    prevZoom = currentZoom;
     document.querySelector(".loading-text").innerText = "Chargé !"
 }
 
@@ -144,10 +174,58 @@ function cleanMarkers(map) {
         currentPolygon = null;
         currentPolygonCoordinates = null;
     }
-    for (const marker of markers) {
-        map.removeLayer(marker)
+
+    const stringifiedCurrentBbox = currentBbox.join(",");
+    const stringifiedPrevBbox = prevBbox !== null ? prevBbox.join(",") : "";
+
+    const [bboxLng1,bboxLat1,bboxLng2,bboxLat2] = currentBbox;
+
+    const markedDataKeys = Object.keys(markedDatas)
+
+    for (const key of markedDataKeys) {
+
+        const {marker, data} = markedDatas[key]
+
+        if (
+            prevZoom !== currentZoom ||
+            stringifiedCurrentBbox === stringifiedPrevBbox
+        ) {
+            delete markedDatas[key];
+            map.removeLayer(marker);
+            continue;
+        }
+
+        if (data.type === "zone") {
+            const {lat1, lat2, lon1, lon2} = data;
+
+            if (
+                lat1 > bboxLat2 ||
+                lat2 < bboxLat1 ||
+                lon1 > bboxLng2 ||
+                lon2 < bboxLng1
+            ) {
+                delete markedDatas[key];
+                map.removeLayer(marker);
+            }
+            
+            continue;
+        }
+        if (data.type === "camera") {
+            const {lat, lon} = data;
+
+            if (
+                lat > bboxLat2 ||
+                lat < bboxLat1 ||
+                lon > bboxLng2 ||
+                lon < bboxLng1
+            ) {
+                delete markedDatas[key];
+                map.removeLayer(marker);
+            }
+
+            continue;
+        }
     }
-    markers = [];
 }
 
 function generatePopup(camera) {

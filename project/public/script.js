@@ -1,4 +1,4 @@
-import { searchAndShowCameras, setPopupPrototype } from "./fetcher.js";
+import { searchAndShowCameras, setPopupPrototype } from "./cameras.js";
 import { initAndListenFilters, filtersState, onMobileMenuCloseButton, onMobileMenuOpenButton, onLegendHeaderClick } from "./filters.js";
 
 document.addEventListener("DOMContentLoaded", () => {

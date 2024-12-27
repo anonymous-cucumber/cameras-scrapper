@@ -1,4 +1,4 @@
-import { searchAndShowCameras } from "./fetcher.js";
+import { searchAndShowCameras } from "./cameras.js";
 import labels from "./labels.js";
 import { isMobile } from "./libs.js";
 
