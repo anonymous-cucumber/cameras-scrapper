@@ -101,10 +101,10 @@ function showCameras(datas, map){
     cleanMarkers(map);
 
     for (const data of datas) {
-        const {lat, lon, type, count} = data
+        const {lat, lon, type} = data
         const marker = new L.Marker({lat, lng: lon}, {
             icon: type === "zone" ? 
-                new L.DivIcon({ html: `<div class="zone-tooltip">${count}</div>`}) : 
+                new L.DivIcon({ html: `<div class="zone-tooltip">${data.count}</div>`}) : 
                 new L.Icon({
                     iconUrl: `/images/${getCameraImage(data)}`,
                     iconSize: [25, 25]
@@ -114,9 +114,11 @@ function showCameras(datas, map){
         let key = null;
             
         if (type === "zone") {
-            const {lat1,lon1,lat2,lon2} = data
+            const {lat1, lon1, lat2, lon2, zoneId} = data
+
+            key = "zone-"+zoneId;
+
             marker.on("click", () => {
-                console.log(data)
                 if (currentPolygon !== null) {
                     map.removeLayer(currentPolygon);
                     currentPolygon = null;
@@ -134,9 +136,11 @@ function showCameras(datas, map){
                 }).addTo(map);
                 currentPolygonCoordinates = {lat1,lon1,lat2,lon2}
             });
-            key = "zone-"+data.zoneId;
         }
         if (type === "camera") {
+            
+            key = "cam-"+data._id;
+
             marker.on("click", async () => {
                 if (!popupByCamId[data._id]) {
 
@@ -149,8 +153,6 @@ function showCameras(datas, map){
 
                 popupByCamId[data._id].openOn(map)
             })
-
-            key = "cam-"+data.lat+"-"+data.lon;
         }
 
         if (key && markedDatas[key]) {
@@ -180,12 +182,7 @@ function cleanMarkers(map) {
 
     const [bboxLng1,bboxLat1,bboxLng2,bboxLat2] = currentBbox;
 
-    const markedDataKeys = Object.keys(markedDatas)
-
-    for (const key of markedDataKeys) {
-
-        const {marker, data} = markedDatas[key]
-
+    for (const [key,{marker, data}] of Object.entries(markedDatas)) {
         if (
             prevZoom !== currentZoom ||
             stringifiedCurrentBbox === stringifiedPrevBbox
@@ -195,35 +192,30 @@ function cleanMarkers(map) {
             continue;
         }
 
-        if (data.type === "zone") {
-            const {lat1, lat2, lon1, lon2} = data;
-
-            if (
-                lat1 > bboxLat2 ||
-                lat2 < bboxLat1 ||
-                lon1 > bboxLng2 ||
-                lon2 < bboxLng1
-            ) {
-                delete markedDatas[key];
-                map.removeLayer(marker);
-            }
-            
-            continue;
+        if (
+            data.type === "zone" &&
+            (
+                data.lat1 > bboxLat2 ||
+                data.lat2 < bboxLat1 ||
+                data.lon1 > bboxLng2 ||
+                data.lon2 < bboxLng1
+            )
+        ) {
+            delete markedDatas[key];
+            map.removeLayer(marker);
         }
-        if (data.type === "camera") {
-            const {lat, lon} = data;
 
-            if (
-                lat > bboxLat2 ||
-                lat < bboxLat1 ||
-                lon > bboxLng2 ||
-                lon < bboxLng1
-            ) {
-                delete markedDatas[key];
-                map.removeLayer(marker);
-            }
-
-            continue;
+        if (
+            data.type === "camera" &&
+            (
+                data.lat > bboxLat2 ||
+                data.lat < bboxLat1 ||
+                data.lon > bboxLng2 ||
+                data.lon < bboxLng1
+            )
+        ) {
+            delete markedDatas[key];
+            map.removeLayer(marker);
         }
     }
 }

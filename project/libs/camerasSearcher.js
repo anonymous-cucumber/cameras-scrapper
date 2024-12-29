@@ -2,7 +2,7 @@ const getSearchBBoxes = require("../libs/getSearchBBoxes");
 const promiseConcurrency = require("../libs/promiseConcurrency");
 const Camera = require("../models/Camera");
 
-const showCamerasLimit = 1;
+const showCamerasLimit = 20;
 
 // Last method to calcul partsize was to divide dimensions of map (in px) by 100, and divide nb degres of height and width by the result :
 //   degHeight = lat2-lat1;
@@ -13,8 +13,8 @@ const showCamerasLimit = 1;
 // This method has a problem, because of the verticalPartSize, for a defined height in px, and zoom, 
 // change in function of latitude, because of merkator projection.
 
-// We want a fix partsize, horizontal, and vertical, for each zoom, 
-// so, for vertical partsize, when make an average on value for each zoom, between the max (at equator) and the min (at the poles). 
+// We want a static partsize, horizontal, and vertical, for each zoom, 
+// so, for vertical partsize, when make an average of value for each zoom, between the max (at equator) and the min (at the poles). 
 
 function getVerticalPartSizeFromZoom(zoom) {
     if (zoom === 19)
@@ -59,7 +59,7 @@ function getVerticalPartSizeFromZoom(zoom) {
         return 22.716320780196234 // avg(22.725532728701218, 22.70710883169125)
 }
 
-// For horizontal parsize, we just have to do that is describe bellow, because if it's don't change un function of latitude.
+// For horizontal parsize, we just have to do that is described bellow, because of it's don't change in function of latitude.
 function getPartSizesFromZoom(zoom) {
     return {
         horizontalPartSize: 0.0002682209014895356 * 2**(19-zoom),
