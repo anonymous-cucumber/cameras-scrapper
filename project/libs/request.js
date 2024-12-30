@@ -8,8 +8,7 @@ function request(fullUrl, params) {
         const [proto, url] = fullUrl.split("://");
 
         const [host, port] = url.split("/")[0].split(":")
-
-        const path = url.split("/").slice(1).join("/")
+        const path = "/"+url.split("/").slice(1).join("/")
 
 
         const protoLib = protos[proto ?? "http"];

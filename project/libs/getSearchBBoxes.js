@@ -29,8 +29,10 @@ function getHorizontalSearchBBoxes(searchCoordinates, horizontalInfos, verticalZ
 
         searchLon1 = searchLon2
     }
-    searchLon2 = searchLon1+horizontalEndModulo;
-    bboxes.push({lat1: searchLat1, lon1: searchLon1, lat2: searchLat2, lon2: searchLon2, zoneId: verticalZoneId+"-"+(horizontalFirstZoneId+horizontalNbSearchs+1)});
+    if (horizontalEndModulo > 0) {
+        searchLon2 = searchLon1+horizontalEndModulo;
+        bboxes.push({lat1: searchLat1, lon1: searchLon1, lat2: searchLat2, lon2: searchLon2, zoneId: verticalZoneId+"-"+(horizontalFirstZoneId+horizontalNbSearchs+1)});
+    }
 
     return bboxes;
 }
@@ -38,7 +40,7 @@ function getSearchBBoxes([lon1,lat1,lon2,lat2], verticalPartSize, horizontalPart
 
     const nbVerticalPartSizeFrom0 = lat1/verticalPartSize;
     const roundedNbVerticalPartSizeFrom0 = nbVerticalPartSizeFrom0%1 == 0 ? nbVerticalPartSizeFrom0 : Math.floor(nbVerticalPartSizeFrom0)+1;
-    const latStartAt = roundedNbVerticalPartSizeFrom0*verticalPartSize;
+    const latStartAt = Math.min(roundedNbVerticalPartSizeFrom0*verticalPartSize, lat2);
     const verticalStartModulo = latStartAt-lat1;
 
     const verticalDistance = lat2-latStartAt;
@@ -49,7 +51,7 @@ function getSearchBBoxes([lon1,lat1,lon2,lat2], verticalPartSize, horizontalPart
 
     const nbHorizontalPartSizeFrom0 = lon1/horizontalPartSize;
     const roundedNbHorizontalPartSizeFrom0 = nbHorizontalPartSizeFrom0%1 == 0 ? nbHorizontalPartSizeFrom0 : Math.floor(nbHorizontalPartSizeFrom0)+1;
-    const lonStartAt = roundedNbHorizontalPartSizeFrom0*horizontalPartSize;
+    const lonStartAt = Math.min(roundedNbHorizontalPartSizeFrom0*horizontalPartSize, lon2);
     const horizontalStartModulo = lonStartAt-lon1;
 
     const horizontalDistance = lon2-lonStartAt;
@@ -96,15 +98,17 @@ function getSearchBBoxes([lon1,lat1,lon2,lat2], verticalPartSize, horizontalPart
         searchCoordinates.searchLat1 = searchCoordinates.searchLat2;
         searchCoordinates.searchLon1 = lon1;
     }
-    searchCoordinates.searchLat2 = searchCoordinates.searchLat1+verticalEndModulo;
-    bboxes = bboxes.concat(
-        getHorizontalSearchBBoxes(
-            searchCoordinates,
-            horizontalInfos,
-            roundedNbVerticalPartSizeFrom0+verticalNbSearchs+1,
-            bboxToExclude
-        )
-    );
+    if (verticalEndModulo > 0) {
+        searchCoordinates.searchLat2 = searchCoordinates.searchLat1+verticalEndModulo;
+        bboxes = bboxes.concat(
+            getHorizontalSearchBBoxes(
+                searchCoordinates,
+                horizontalInfos,
+                roundedNbVerticalPartSizeFrom0+verticalNbSearchs+1,
+                bboxToExclude
+            )
+        );
+    }
 
     return bboxes;
 }

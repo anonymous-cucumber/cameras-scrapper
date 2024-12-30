@@ -1,4 +1,5 @@
 const { getIn, putIn } = require("./mapUtils");
+const replaceAll = require("./replaceAll");
 
 const headerArrayByModel = {};
 
@@ -26,10 +27,15 @@ function generateHeaderFromModel(model, delimiter = ";") {
 function generateLineFromModel(model,data, delimiter = ";") {
     return getHeaderArrayFromModel(model).map(key => {
         let value = getIn(data, key);
+
+        if (typeof(value) === "string")
+            value = replaceAll(value, "\n", "\\n")
+
         if (value instanceof Date)
             value = value.toISOString();
+        
         return value;
-    }).join(";")
+    }).join(delimiter)
 }
 
 function generateLinesFromModel(model, datas, delimiter = ";") {
@@ -42,7 +48,7 @@ function generateObjFromCsvLine(header, line, delimiter = ";", model = null) {
 
     if (typeof(line) === "string")
         line = line.split(delimiter);
-    
+
     let obj = {};
     for (let i=0;i<header.length;i++) {
         let [path,value] = [header[i],line[i]];
@@ -65,7 +71,9 @@ function castStringValueFromModelType(model, path, value) {
         case "Number":
             return parseFloat(value);
         case "Date":
-            return new Date(value)
+            return new Date(value);
+        case "String":
+            return replaceAll(value, "\\n", "\n");
     }
     return value
 }

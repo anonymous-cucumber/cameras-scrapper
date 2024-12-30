@@ -4,11 +4,11 @@ const request = require("../libs/request");
 const getSearchBBoxes = require("../libs/getSearchBBoxes");
 
 const bboxes = {
-    france: {lat1: 42.332792, lon1: -5.142053, lat2: 51.089147, lon2: 8.233550},
-    paris: {lat1: 48.815729, lon1: 2.258395, lat2: 48.901457, lon2: 2.415771}
+    france: [-5.142053, 42.332792, 8.233550, 51.089147],
+    paris: [2.258395, 48.815729, 2.415771, 48.901457]
 };
 
-const searchsSize = {horizontal: 0.5, vertical: 0.5} // Exprimed in degrees
+const searchsSize = {horizontal: 0.25, vertical: 0.25} // Exprimed in degrees
 
 const getUrl = (lat1, lon1, lat2, lon2) => 
     `https://sunders.uber.space/camera.php?bbox=${lon1},${lat1},${lon2},${lat2}&zoom=16&width=1848&height=539`

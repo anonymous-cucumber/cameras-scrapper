@@ -84,7 +84,7 @@ function searchCameras({bbox: [lon1,lat1,lon2,lat2], prevBbox, zoom, doGetAllCam
 
     return promiseConcurrency(
         getSearchBBoxes([lon1,lat1,lon2,lat2], verticalPartSize, horizontalPartSize, prevBbox)
-            .map(({lat1,lon1,lat2,lon2,zoneId}) => async () => {
+            .map(({lat1, lon1, lat2, lon2, zoneId}) => async () => {
                 const specificCameraQuery = {
                     ...cameraQuery,
                     lat: {$gte: lat1, $lte: lat2},

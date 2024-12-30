@@ -59,7 +59,7 @@ async function exportRemoteCameras(partSize, callback) {
         const {data: cameras} = await getRemoteCameras(partSize, page);
 
         page += 1;
-        await callback(cameras, page*partSize, totalCameras);
+        await callback(cameras, Math.min(page*partSize, totalCameras), totalCameras);
     }
 }
 
