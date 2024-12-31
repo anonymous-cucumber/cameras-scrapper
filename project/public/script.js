@@ -1,4 +1,4 @@
-import { searchAndShowCameras, setPopupPrototype } from "./cameras.js";
+import { searchAndShowCameras, killCamerasSearching, setPopupPrototype } from "./cameras.js";
 import { initAndListenFilters, filtersState, onMobileMenuCloseButton, onMobileMenuOpenButton, onLegendHeaderClick } from "./filters.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -15,6 +15,9 @@ document.addEventListener("DOMContentLoaded", () => {
     L.Control.geocoder().addTo(map);
 
     searchAndShowCameras(map,filtersState);
+    map.on("movestart", () => {
+        killCamerasSearching();
+    })
     map.on("moveend", () => {
         const zoom = map.getZoom();
         const {lat, lng} = map.getCenter()

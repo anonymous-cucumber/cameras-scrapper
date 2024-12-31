@@ -41,16 +41,26 @@ function getCameraImage(camera) {
     return "cctvGrey.png"
 }
 
-export function searchAndShowCameras(map, filters) {
+function setLoadingMessage(msg) {
+    document.querySelector(".loading-text").innerText = msg;
+}
+
+export function killCamerasSearching() {
     if (timeout !== null) {
         clearTimeout(timeout);
+        timeout = null;
     }
+    if (abortController !== null) {
+        abortController.abort();
+        abortController = null;
+    }
+}
+
+export function searchAndShowCameras(map, filters) {
+    killCamerasSearching();
+
     timeout = setTimeout(() => {
         timeout = null;
-        if (abortController !== null) {
-            abortController.abort();
-            abortController = null;
-        }
         searchCameras(map, filters)
         .then((datas) => showCameras(datas, map))
     }, 500)
@@ -85,8 +95,7 @@ function searchCameras(map, filters) {
         zoom: currentZoom,
         ...Object.entries(filters).reduce((acc,[key,{value}]) => ({...acc, [key]: value}), {})
     })
-
-    document.querySelector(".loading-text").innerText = "Chargement..."
+    setLoadingMessage("Chargement...");
 
     abortController = new AbortController();
 
@@ -167,7 +176,7 @@ function showCameras(datas, map){
 
     prevBbox = currentBbox;
     prevZoom = currentZoom;
-    document.querySelector(".loading-text").innerText = "Chargé !"
+    setLoadingMessage("Chargé !");
 }
 
 function cleanMarkers(map) {
