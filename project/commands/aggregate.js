@@ -8,8 +8,10 @@ const getAllSources = require("../libs/getAllSources");
 const {scrapCsvPath} = require("../paths");
 const { dateToDateRangeValidator } = require("../libs/validators/commandValidators");
 
+
+
 const publicRadius = 10; // 10 metters;
-const privateRadius = 3; // 3 metters;
+const minRadius = 3 // 3 metters
 
 function getArgs() {
     return {
@@ -96,7 +98,7 @@ const infosFieldsBySource = {
             angle: infos.angle,
             op_type: infos.op_type
         },
-        type: infos.op_type,
+        type: ["public","private"].includes(infos.op_type) ? infos.op_type : "unknown",
         zone: infos.zone
     }),
     camerci: (infos) => ({
@@ -117,8 +119,28 @@ const infosFieldsBySource = {
             },
             type: infos.surveillance === "public" ? "public" : "private"
         }
+    },
+    umapAnger: (infos) => {
+        return {
+            umapAnger: {
+                name: infos.name
+            },
+            type: "unknown"
+        }
     }
 };
+
+function getCoordinatesQueryByRadius(lat, lon, radius) {
+    const minLat = destinationPointLat(lat, true, radius);
+    const maxLat = destinationPointLat(lat, false, radius);
+    const minLon = destinationPointLon(lat,lon,false, radius);
+    const maxLon = destinationPointLon(lat,lon,true, radius);
+
+    return {
+        lat: {$gte: minLat, $lte: maxLat},
+        lon: {$gte: minLon, $lte: maxLon}
+    }
+}
 
 async function execute({files,sources}) {    
     console.log("Selected sources : ");
@@ -160,28 +182,61 @@ async function execute({files,sources}) {
             const computedInfos = infosFieldsBySource[fileSource](infos);
             computedInfos[fileSource].date = date
 
-            const radius = computedInfos.type === "public" ? publicRadius : privateRadius;
+            // si private => min radius plus proche private ou unknown
+            // si unknown => min radius plus proche de tout type
+            // si public => min radius plus proche unknown ou max radius plus proche publique
 
-            const minLat = destinationPointLat(lat, true, radius);
-            const maxLat = destinationPointLat(lat, false, radius);
-            const minLon = destinationPointLon(lat,lon,false, radius);
-            const maxLon = destinationPointLon(lat,lon,true, radius);
+            let query;
+            switch (computedInfos.type) {
+                case "public":
+                    query = {
+                        $or: [
+                            {
+                                "infos.type": "public",
+                                ...getCoordinatesQueryByRadius(lat, lon, publicRadius)
+                            },
+                            {
+                                "infos.type": "unknown",
+                                ...getCoordinatesQueryByRadius(lat, lon, minRadius)
+                            }
+                        ]
+                     }
+                     break;
 
-            const nearCamera = await Camera.findOne({
-                lat: {$gte: minLat, $lte: maxLat},
-                lon: {$gte: minLon, $lte: maxLon},
-                coordinatesSource: {$ne: fileSource},
-                "infos.type": computedInfos.type
-            });
+                case "private":
+                    query = {
+                        "infos.type": ["public", "unknown"],
+                        ...getCoordinatesQueryByRadius(lat, lon, minRadius)
+                    }
+                    break;
+
+                case "unknown":
+                    query = getCoordinatesQueryByRadius(lat, lon, minRadius)
+            }
+
+            const nearCamera = await Camera.findOne(query);
 
             if (nearCamera !== null) {
                 if (nearCamera.infos[fileSource] !== undefined)
                     return {createds, aggregateds};
                 
-                const [coordinatesToKeep,coordinatesDate,coordinatesSource] = (computedInfos.type === "public" && ["camerci","parisPoliceArcgis"].includes(nearCamera.coordinatesSource)) ?
-                                                [{lat: nearCamera.lat, lon: nearCamera.lon},nearCamera.coordinatesDate,nearCamera.coordinatesSource] :
-                                                [{lat, lon},fileDate,fileSource]
-                
+                let coordinatesToKeep;
+                let coordinatesDate;
+                let coordinatesSource;
+
+                if (["camerci","parisPoliceArcgis"].includes(nearCamera.coordinatesSource)) {
+                    coordinatesToKeep = {lat: nearCamera.lat, lon: nearCamera.lon};
+                    coordinatesDate = nearCamera.coordinatesDate;
+                    coordinatesSource = nearCamera.coordinatesSource;
+                } else {
+                    coordinatesToKeep = {lat, lon};
+                    coordinatesDate = fileDate;
+                    coordinatesSource = fileSource;
+                }
+
+                if (nearCamera.type === "unknown" && computedInfos.type !== "unknown") {
+                    nearCamera.type = computedInfos.type;
+                }
 
                 nearCamera.updatedAt = date;                        
                 nearCamera.coordinatesDate = coordinatesDate;

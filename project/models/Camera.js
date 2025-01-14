@@ -47,7 +47,7 @@ const CameraSchema = new Schema({
             op_type: {type: String, enum: ["public","private",""], required: false},
         }),
 
-        type: {type: String, enum: ["public","private",""], required: false}
+        type: {type: String, enum: ["public","private","unknown"], required: false}
     })
 });
 
