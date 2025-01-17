@@ -82,32 +82,38 @@ function example() {
 }
 
 const infosFieldsBySource = {
-    parisPoliceArcgis: (infos) => ({
+    parisPoliceArcgis: (infos, lat, lon) => ({
         parisPoliceArcgis: {
             adresse: infos.adresse,
-            code_postal: infos.code_postal
+            code_postal: infos.code_postal,
+            lat,
+            lon
         },
         type: "public",
         zone: "paris"
     }),
-    sousSurveillanceNet: (infos) => ({
+    sousSurveillanceNet: (infos, lat, lon) => ({
         sousSurveillanceNet: {
             zone: infos.zone,
             apparence: infos.apparence,
             direction: infos.direction,
             angle: infos.angle,
-            op_type: infos.op_type
+            op_type: infos.op_type,
+            lat,
+            lon
         },
         type: ["public","private"].includes(infos.op_type) ? infos.op_type : "unknown",
         zone: infos.zone
     }),
-    camerci: (infos) => ({
+    camerci: (infos, lat, lon) => ({
         camerci: {
-            desc: infos
+            desc: infos,
+            lat,
+            lon
         },
         type: "public"
     }),
-    surveillanceUnderSurveillance: (infos) => {
+    surveillanceUnderSurveillance: (infos, lat, lon) => {
         const camera_direction = parseInt(infos["camera:direction"]);
         return {
             surveillanceUnderSurveillance: {
@@ -115,15 +121,19 @@ const infosFieldsBySource = {
                 camera_direction: isNaN(camera_direction) ? undefined : camera_direction,
                 camera_mount: infos["camera:mount"],
                 camera_type: infos["camera:type"],
-                surveillance: infos.surveillance
+                surveillance: infos.surveillance,
+                lat,
+                lon
             },
             type: infos.surveillance === "public" ? "public" : "private"
         }
     },
-    umapAnger: (infos) => {
+    umapAngers: (infos, lat, lon) => {
         return {
-            umapAnger: {
-                name: infos.name
+            umapAngers: {
+                name: infos.name,
+                lat,
+                lon
             },
             type: "unknown"
         }
@@ -176,10 +186,11 @@ async function execute({files,sources}) {
             }
             const [lat,lon,infos] = [parseFloat(obj.lat),parseFloat(obj.lon),JSON.parse(obj.infos)];
             
-            if ((await Camera.findOne({coordinatesSource: fileSource, lat, lon})) !== null)
+            if ((await Camera.findOne({coordinatesSource: fileSource, lat, lon})) !== null) {
                 return {createds, aggregateds};
+            }
 
-            const computedInfos = infosFieldsBySource[fileSource](infos);
+            const computedInfos = infosFieldsBySource[fileSource](infos, lat, lon);
             computedInfos[fileSource].date = date
 
             // si private => min radius plus proche private ou unknown
@@ -190,6 +201,7 @@ async function execute({files,sources}) {
             switch (computedInfos.type) {
                 case "public":
                     query = {
+                        coordinatesSource: {$ne: fileSource},
                         $or: [
                             {
                                 "infos.type": "public",
@@ -205,21 +217,23 @@ async function execute({files,sources}) {
 
                 case "private":
                     query = {
-                        "infos.type": ["public", "unknown"],
+                        coordinatesSource: {$ne: fileSource},
+                        "infos.type": ["private", "unknown"],
                         ...getCoordinatesQueryByRadius(lat, lon, minRadius)
                     }
                     break;
 
                 case "unknown":
-                    query = getCoordinatesQueryByRadius(lat, lon, minRadius)
+                    query = {
+                        coordinatesSource: {$ne: fileSource},
+                        ...getCoordinatesQueryByRadius(lat, lon, minRadius)
+                    }
             }
 
             const nearCamera = await Camera.findOne(query);
 
-            if (nearCamera !== null) {
-                if (nearCamera.infos[fileSource] !== undefined)
-                    return {createds, aggregateds};
-                
+            if (nearCamera !== null && nearCamera.infos[fileSource] === undefined) {
+    
                 let coordinatesToKeep;
                 let coordinatesDate;
                 let coordinatesSource;
@@ -248,6 +262,16 @@ async function execute({files,sources}) {
                 await nearCamera.save();
                 return {createds, aggregateds: {...aggregateds, [fileSource]: (aggregateds[fileSource]??0) + 1}};
             }
+
+            if (
+                nearCamera !== null && 
+                nearCamera.infos[fileSource] !== undefined && 
+                nearCamera.infos[fileSource].lat === lat && 
+                nearCamera.infos[fileSource].lon === lon
+            ) {
+                return {createds, aggregateds};
+            }
+
             
             await Camera.create({
                 createdAt: date,

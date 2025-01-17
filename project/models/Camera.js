@@ -19,12 +19,18 @@ const CameraSchema = new Schema({
 
             adresse: {type: String, required: false},
             code_postal: {type: String, required: false},
+
+            lat: {type: Number, required: true},
+            lon: {type: Number, required: true}
         }),
 
         camerci: new Schema({
             date: {type: Date, required: true},
 
-            desc: {type: String, required: false}
+            desc: {type: String, required: false},
+
+            lat: {type: Number, required: true},
+            lon: {type: Number, required: true}
         }),
 
         surveillanceUnderSurveillance: new Schema({
@@ -34,7 +40,10 @@ const CameraSchema = new Schema({
             camera_direction: {type: Number, required: false},
             camera_mount: {type: String, required: false},
             camera_type: {type: String, required: false},
-            surveillance: {type: String, required: false}
+            surveillance: {type: String, required: false},
+
+            lat: {type: Number, required: true},
+            lon: {type: Number, required: true}
         }),
 
         sousSurveillanceNet: new Schema({
@@ -45,6 +54,16 @@ const CameraSchema = new Schema({
             direction: {type: Number, required: false},
             angle: {type: Number, required: false},
             op_type: {type: String, enum: ["public","private",""], required: false},
+
+            lat: {type: Number, required: true},
+            lon: {type: Number, required: true}
+        }),
+
+        umapAngers: new Schema({
+            name: {type: String, required: false},
+
+            lat: {type: Number, required: true},
+            lon: {type: Number, required: true}
         }),
 
         type: {type: String, enum: ["public","private","unknown"], required: false}

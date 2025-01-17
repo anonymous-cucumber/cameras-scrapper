@@ -6,10 +6,11 @@ const sourcesFilterConfig = {
     camerci: {link: "https://camerci.fr"},
     parisPoliceArcgis: {link: "https://arcg.is/08y0y10"},
     sousSurveillanceNet: {link: "https://www.sous-surveillance.net"},
-    surveillanceUnderSurveillance: {link: "https://sunders.uber.space"}
+    surveillanceUnderSurveillance: {link: "https://sunders.uber.space"},
+    umapAngers: {link: "https://umap.openstreetmap.fr/fr/map/publicites-angers_1109346"}
 }
 
-const typesFilterConfig = ["public","private",""];
+const typesFilterConfig = ["public","private","unknown"];
 
 let filterSectionPrototype = null;
 let filterLinePrototype = null;
