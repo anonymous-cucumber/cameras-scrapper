@@ -1,6 +1,6 @@
-FROM node:21
+FROM node:22.9
 
-RUN npm install --location=global npm@10.5.1
+RUN npm install --location=global npm@11.0.0
 RUN rm -rf /root/.npm/_cacache/tmp
 
 WORKDIR /project
