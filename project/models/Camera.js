@@ -66,7 +66,7 @@ const CameraSchema = new Schema({
             lon: {type: Number, required: true}
         }),
 
-        type: {type: String, enum: ["public","private","unknown"], required: false}
+        type: {type: String, enum: ["official","public","private","unknown"], required: false}
     })
 });
 
