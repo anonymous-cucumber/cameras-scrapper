@@ -30,7 +30,7 @@ function scrapper(bbox) {
         getSearchBBoxes(bboxes[bbox],searchsSize.vertical,searchsSize.horizontal).map(({lat1, lon1, lat2, lon2}) => async () => {
             console.log("Scrapping on rectangle "+[lon1,lat1,lon2,lat2].join(","))
             return request(getUrl(lat1, lon1, lat2, lon2)).then(str => JSON.parse(replaceAll(str,"\n","\\n")));
-        }), 10, (i,total) => {
+        }), 8, (i,total) => {
             console.log((Math.round((i/total)*10000)/100)+"%")
         }
     ).then(lists => 

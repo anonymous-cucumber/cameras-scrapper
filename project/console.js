@@ -1,14 +1,13 @@
 const {fileExists} = require("./libs/fsUtils");
 
 async function getCommand(args = process.argv.slice(2), base = `${__dirname}/commands/`, depth = 1) {
-    if (args.length === 0)
-        throw new Error("Please mention a command");
-
     let path;
 
     if (await fileExists(path = `${base}/index.js`))
         return {...require(path), depth: depth-1};
 
+    if (args.length === 0)
+        throw new Error("Please mention a command");
 
     const command = args.shift();
 

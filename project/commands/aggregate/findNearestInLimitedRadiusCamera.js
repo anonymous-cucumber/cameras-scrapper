@@ -1,5 +1,5 @@
 const Camera = require("../../models/Camera");
-const {destinationPointLat, destinationPointLon} = require("../../libs/convertCoordinates");
+const { destinationPointLat, destinationPointLon, calcDistanceBetween } = require("../../libs/convertCoordinates");
 
 const publicRadius = 10; // 10 metters;
 const minRadius = 3 // 3 metters
@@ -38,7 +38,7 @@ function getNearCameraQuery(source, type, lat, lon) {
 
     if (type === "private") {
         return {
-            coordinatesSource: {$ne: fileSource},
+            coordinatesSource: {$ne: source},
             "infos.type": ["private", "unknown"],
             ...getCoordinatesQueryByRadius(lat, lon, minRadius)
         }
@@ -46,7 +46,7 @@ function getNearCameraQuery(source, type, lat, lon) {
 
     if (type === "unknown") {
         return {
-            coordinatesSource: {$ne: fileSource},
+            coordinatesSource: {$ne: source},
             ...getCoordinatesQueryByRadius(lat, lon, minRadius)
         }
     }
@@ -54,8 +54,22 @@ function getNearCameraQuery(source, type, lat, lon) {
     throw new Error(`Error when searching near camera during aggregation : this type "${type}" is invalid`);
 }
 
-function findNearCamera(source, type, lat, lon) {
-    return Camera.findOne(getNearCameraQuery(source, type, lat, lon))
+function findNearestInLimitedRadiusCamera(source, type, lat, lon) {
+    return Camera.find(getNearCameraQuery(source, type, lat, lon)).then(cameras => 
+        cameras
+        .reduce(
+            ({nearest, shorterDistance}, camera) => {
+                const distance = calcDistanceBetween(lat, lon, camera.lat, camera.lon)
+                if (shorterDistance === null || distance < shorterDistance)
+                    return {
+                        nearest: camera,
+                        shorterDistance: distance
+                    };
+                return {nearest, shorterDistance}
+            }, 
+            {nearest: null, shorterDistance: null}
+        ).nearest
+    )
 }
 
-module.exports = findNearCamera;
+module.exports = findNearestInLimitedRadiusCamera;

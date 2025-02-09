@@ -6,8 +6,10 @@ const {question} = require("../../libs/ui");
 const getAllSources = require("../../libs/getAllSources");
 const {scrapCsvPath} = require("../../paths");
 const { dateToDateRangeValidator } = require("../../libs/validators/commandValidators");
-const infosFieldsBySource = require("./infosFieldsBySource");
-const findNearCamera = require("./findNearCamera");
+const { calcDistanceBetween } = require("../../libs/convertCoordinates");
+const {getComputedInfosBySource, getTypeFromSourceAndComputedInfos} = require("./camerasComputeInfos");
+const findNearestInLimitedRadiusCamera = require("./findNearestInLimitedRadiusCamera");
+const mergeCameras = require("./mergeCameras");
 
 function getArgs() {
     return {
@@ -115,62 +117,56 @@ async function execute({files,sources}) {
                 return {createds, aggregateds};
             }
 
-            const computedInfos = infosFieldsBySource[fileSource](infos, lat, lon);
-            computedInfos[fileSource].date = date
+            const computedInfos = getComputedInfosBySource(fileSource, infos, lat, lon);
+            computedInfos.addedAt = date;
+            computedInfos.scrappedAt = fileDate;
+            
+            const computedType = getTypeFromSourceAndComputedInfos(fileSource, computedInfos);
 
-            const nearCamera = await findNearCamera(fileSource, computedInfos.type, lat, lon)
+            const nearestCamera = await findNearestInLimitedRadiusCamera(fileSource, computedType, lat, lon)
 
-            if (nearCamera !== null && nearCamera.infos[fileSource] === undefined) {
-    
-                let coordinatesToKeep;
-                let coordinatesDate;
-                let coordinatesSource;
-
-                if (nearCamera.infos.type === "official") {
-                    coordinatesToKeep = {lat: nearCamera.lat, lon: nearCamera.lon};
-                    coordinatesDate = nearCamera.coordinatesDate;
-                    coordinatesSource = nearCamera.coordinatesSource;
-                } else {
-                    coordinatesToKeep = {lat, lon};
-                    coordinatesDate = fileDate;
-                    coordinatesSource = fileSource;
+            if (nearestCamera !== null) {
+                if (nearestCamera.infos[fileSource] === undefined) {
+                    await mergeCameras(computedInfos, fileSource, date, nearestCamera);
+                    return {createds, aggregateds: {...aggregateds, [fileSource]: (aggregateds[fileSource]??0) + 1}};
                 }
-
-                if (
-                    (computedInfos.type !== "unknown" && nearCamera.type === "unknown") ||
-                    (computedInfos.type === "official" && nearCamera.type === "public")
-                ) {
-                    nearCamera.type = computedInfos.type;
+                if (nearestCamera.infos[fileSource].lat === lat && nearestCamera.infos[fileSource].lon === lon) {
+                    return {createds, aggregateds};
                 }
+                const distFromMeAndNear = calcDistanceBetween(lat, lon, nearestCamera.lat, nearestCamera.lon);
+                const distFromAggregatedToNear = calcDistanceBetween(nearCamera.infos[fileSource].lat, nearestCamera.infos[fileSource].lon, nearestCamera.lat, nearestCamera.lon);
 
-                nearCamera.updatedAt = date;                        
-                nearCamera.coordinatesDate = coordinatesDate;
-                nearCamera.coordinatesSource = coordinatesSource;
-                nearCamera.lat = coordinatesToKeep.lat;
-                nearCamera.lon = coordinatesToKeep.lon;
-                nearCamera.infos = {...nearCamera.infos, ...computedInfos};
-                
-                await nearCamera.save();
-                return {createds, aggregateds: {...aggregateds, [fileSource]: (aggregateds[fileSource]??0) + 1}};
-            }
+                if (distFromMeAndNear < distFromAggregatedToNear) {
+                    await Camera.create({
+                        createdAt: nearestCamera.infos[fileSource].addedAt,
+                        updatedAt: nearestCamera.infos[fileSource].addedAt,
+                        scrappedAt: nearestCamera.infos[fileSource].scrappedAt,
+                        source: fileSource,
+                        lat: nearestCamera.infos[fileSource].lat,
+                        lon: nearestCamera.infos[fileSource].lon,
+                        infos: {
+                            [fileSource]: nearestCamera.infos[fileSource],
+                            type: getTypeFromSourceAndComputedInfos(fileSource, nearestCamera.infos[fileSource])
+                        }
+                    });
+                    
+                    await mergeCameras(computedInfos, fileSource, date, nearestCamera);
 
-            if (
-                nearCamera !== null && 
-                nearCamera.infos[fileSource] !== undefined && 
-                nearCamera.infos[fileSource].lat === lat && 
-                nearCamera.infos[fileSource].lon === lon
-            ) {
-                return {createds, aggregateds};
+                    return {createds, aggregateds: {...aggregateds, [fileSource]: (aggregateds[fileSource]??0) + 1}};
+                }
             }
 
             
             await Camera.create({
                 createdAt: date,
                 updatedAt: date,
-                coordinatesDate: fileDate,
-                coordinatesSource: fileSource,
+                scrappedAt: fileDate,
+                source: fileSource,
                 lat, lon,
-                infos: computedInfos
+                infos: {
+                    [fileSource]: computedInfos,
+                    type: computedType
+                }
             })
             return {createds: {...createds, [fileSource]: (createds[fileSource]??0) + 1}, aggregateds};
         }, {acc})
