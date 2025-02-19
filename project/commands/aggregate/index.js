@@ -91,7 +91,7 @@ async function execute({files,sources}) {
         return;
     }
     
-    let acc = {createds: {}, aggregateds: {}};
+    let acc = {};
 
     for (const {filename, fileSource, fileDate, fileAdditionalParams} of files) {
         console.log("Importing "+filename+" ...")
@@ -107,14 +107,14 @@ async function execute({files,sources}) {
         const nbLines = await lazyReadCsv(scrapCsvPath+filename, async (_acc,_obj,i) => {
             return i+1;
         })
-        acc = await lazyReadCsv(scrapCsvPath+filename, async ({createds, aggregateds},obj,i) => {
+        acc = await lazyReadCsv(scrapCsvPath+filename, async (acc,obj,i) => {
             if ((i+1)%Math.floor(nbLines/100) === 0) {
                 console.log(`${i+1}/${nbLines} (${Math.round((i+1)/(nbLines)*100)}%)`)
             }
             const [lat,lon,infos] = [parseFloat(obj.lat),parseFloat(obj.lon),JSON.parse(obj.infos)];
             
-            if ((await Camera.findOne({coordinatesSource: fileSource, lat, lon})) !== null) {
-                return {createds, aggregateds};
+            if ((await Camera.findOne({[`infos.${fileSource}.lat`]: lat, [`infos.${fileSource}.lon`]: lon})) !== null) {
+                return acc;
             }
 
             const computedInfos = getComputedInfosBySource(fileSource, infos, lat, lon);
@@ -128,13 +128,21 @@ async function execute({files,sources}) {
             if (nearestCamera !== null) {
                 if (nearestCamera.infos[fileSource] === undefined) {
                     await mergeCameras(computedInfos, fileSource, date, nearestCamera);
-                    return {createds, aggregateds: {...aggregateds, [fileSource]: (aggregateds[fileSource]??0) + 1}};
+                    
+                    if (!acc[fileSource])
+                        acc[fileSource] = {}
+                    if (!acc[fileSource].aggregateds)
+                        acc[fileSource].aggregateds = {}
+
+                    acc[fileSource].aggregateds[nearestCamera.source] = (acc[fileSource].aggregateds[nearestCamera.source]??0) + 1
+
+                    return acc
                 }
                 if (nearestCamera.infos[fileSource].lat === lat && nearestCamera.infos[fileSource].lon === lon) {
-                    return {createds, aggregateds};
+                    return acc;
                 }
                 const distFromMeAndNear = calcDistanceBetween(lat, lon, nearestCamera.lat, nearestCamera.lon);
-                const distFromAggregatedToNear = calcDistanceBetween(nearCamera.infos[fileSource].lat, nearestCamera.infos[fileSource].lon, nearestCamera.lat, nearestCamera.lon);
+                const distFromAggregatedToNear = calcDistanceBetween(nearestCamera.infos[fileSource].lat, nearestCamera.infos[fileSource].lon, nearestCamera.lat, nearestCamera.lon);
 
                 if (distFromMeAndNear < distFromAggregatedToNear) {
                     await Camera.create({
@@ -149,10 +157,14 @@ async function execute({files,sources}) {
                             type: getTypeFromSourceAndComputedInfos(fileSource, nearestCamera.infos[fileSource])
                         }
                     });
-                    
+
                     await mergeCameras(computedInfos, fileSource, date, nearestCamera);
 
-                    return {createds, aggregateds: {...aggregateds, [fileSource]: (aggregateds[fileSource]??0) + 1}};
+                    if (!acc[fileSource])
+                        acc[fileSource] = {}
+                    acc[fileSource].createds = (acc[fileSource].createds??0) + 1;
+
+                    return acc;
                 }
             }
 
@@ -168,7 +180,12 @@ async function execute({files,sources}) {
                     type: computedType
                 }
             })
-            return {createds: {...createds, [fileSource]: (createds[fileSource]??0) + 1}, aggregateds};
+
+            if (!acc[fileSource])
+                acc[fileSource] = {}
+            acc[fileSource].createds = (acc[fileSource].createds??0) + 1;
+
+            return acc;
         }, {acc})
     }
 

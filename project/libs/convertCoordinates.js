@@ -7,13 +7,26 @@ function wgs84WebMercatorToWgs84LatLon(x,y) {
     return {lat,lon}
 }
 
+const truncate = (x, min, max) => Math.min(Math.max(x,min),max)
 
 const toRad = (deg) => deg * Math.PI / 180;
  
 const toDeg = (rad) => rad * 180 / Math.PI;
 
-const calcDistanceBetween = (lat1,lon1,lat2,lon2) =>
-	Math.acos(Math.sin(toRad(lat1))*Math.sin(toRad(lat2))+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(toRad(lon1-lon2)))*6371*1000
+const calcDistanceBetween = (lat1,lon1,lat2,lon2) => {
+   if (lat1 === lat2 && lon1 === lon2)
+      return 0
+
+   return Math.acos(
+      truncate(
+         Math.sin(toRad(lat1)) * 
+         Math.sin(toRad(lat2)) +
+         Math.cos(toRad(lat1)) *
+         Math.cos(toRad(lat2)) * 
+         Math.cos(toRad(lon1-lon2))
+      , -1, 1)
+   )*6371*1000
+}
  
 const calcDistOnLat = (lat1,brng,dist) => Math.asin(Math.sin(lat1) * Math.cos(dist) +  Math.cos(lat1) * Math.sin(dist) * Math.cos(brng));
 const calcDistOnLon = (lon1,lat1,lat2,brng,dist) => (

@@ -74,7 +74,7 @@ function searchCameras({bbox: [lon1,lat1,lon2,lat2], prevBbox, zoom, doGetAllCam
         lat: null,
         lon: null,
         $and: [
-            ...(coordinatesSources ? [{coordinatesSource: {$in: coordinatesSources}}] : []),
+            ...(coordinatesSources ? [{source: {$in: coordinatesSources}}] : []),
             ...(infosSources ? [{$or: infosSources.map(source => ({["infos."+source]: {$exists: true}}))}] : []),
             ...(types ? [{$or: types.map(type => ({["infos.type"]: type}))}] : [])
         ]

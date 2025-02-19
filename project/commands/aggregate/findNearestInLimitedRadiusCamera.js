@@ -22,7 +22,7 @@ function getCoordinatesQueryByRadius(lat, lon, radius) {
 function getNearCameraQuery(source, type, lat, lon) {
     if (["public", "official"].includes(type)){
         return {
-            coordinatesSource: {$ne: source},
+            source: {$ne: source},
             $or: [
                 {
                     "infos.type": {$in: ["public", "official"]},
@@ -38,7 +38,7 @@ function getNearCameraQuery(source, type, lat, lon) {
 
     if (type === "private") {
         return {
-            coordinatesSource: {$ne: source},
+            source: {$ne: source},
             "infos.type": ["private", "unknown"],
             ...getCoordinatesQueryByRadius(lat, lon, minRadius)
         }
@@ -46,7 +46,7 @@ function getNearCameraQuery(source, type, lat, lon) {
 
     if (type === "unknown") {
         return {
-            coordinatesSource: {$ne: source},
+            source: {$ne: source},
             ...getCoordinatesQueryByRadius(lat, lon, minRadius)
         }
     }
@@ -54,9 +54,12 @@ function getNearCameraQuery(source, type, lat, lon) {
     throw new Error(`Error when searching near camera during aggregation : this type "${type}" is invalid`);
 }
 
-function findNearestInLimitedRadiusCamera(source, type, lat, lon) {
-    return Camera.find(getNearCameraQuery(source, type, lat, lon)).then(cameras => 
-        cameras
+async function findNearestInLimitedRadiusCamera(source, type, lat, lon) {
+    const query = getNearCameraQuery(source, type, lat, lon);
+
+    const cameras = await Camera.find(query)
+
+    return cameras
         .reduce(
             ({nearest, shorterDistance}, camera) => {
                 const distance = calcDistanceBetween(lat, lon, camera.lat, camera.lon)
@@ -69,7 +72,6 @@ function findNearestInLimitedRadiusCamera(source, type, lat, lon) {
             }, 
             {nearest: null, shorterDistance: null}
         ).nearest
-    )
 }
 
 module.exports = findNearestInLimitedRadiusCamera;

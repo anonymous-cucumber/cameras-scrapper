@@ -1,9 +1,9 @@
 const { getSourceCamWithStrongestType } = require("./camerasComputeInfos");
 
-function mergeCameras(computedInfos, fileSource, currentDate, nearCamera) {
+async function mergeCameras(computedInfos, fileSource, currentDate, nearCamera) {
     nearCamera.infos[fileSource] = computedInfos;
 
-    const [strongestSource, strongestType] = getSourceCamWithStrongestType(nearCamera.infos);
+    const [strongestSource, strongestType] = await getSourceCamWithStrongestType(nearCamera.infos._doc);
     const strongestInfos = nearCamera.infos[strongestSource];
 
     nearCamera.updatedAt = currentDate;                        

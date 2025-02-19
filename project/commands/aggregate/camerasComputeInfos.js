@@ -1,3 +1,5 @@
+const getAllSources = require("../../libs/getAllSources");
+
 function getTypeFromSurveillanceUnderSurveillance(infos) {
     const surveillanceTypes = (infos.surveillance ?? "").split(",")
 
@@ -41,17 +43,21 @@ const weightByType = {
     official: 2
 }
 function getSourceCamWithStrongestType(infos) {
-    Object.entries(infos)
-    .filter(([k]) => k !== "type")
-    .map(([source, computedInfos]) => [source, getTypeFromSourceAndComputedInfos(source, computedInfos)])
-    .reduce(([strongestSource, strongestType], [source, type]) => {
-
-        if (strongestType === null || weightByType[type] > weightByType[strongestType])
-            return [source, type]
-
-        return [strongestSource, strongestType];
-
-    }, [null, null])
+    return (
+        getAllSources().then(sources =>
+            sources
+            .filter(source => infos[source])
+            .map((source) => [source, getTypeFromSourceAndComputedInfos(source, infos[source])])
+            .reduce(([strongestSource, strongestType], [source, type]) => {
+        
+                if (strongestType === null || weightByType[type] > weightByType[strongestType])
+                    return [source, type]
+        
+                return [strongestSource, strongestType];
+        
+            }, [null, null])
+        )
+    )
 }
 
 
