@@ -123,7 +123,7 @@ async function execute({files,sources}) {
             
             const computedType = getTypeFromSourceAndComputedInfos(fileSource, computedInfos);
 
-            const nearestCamera = await findNearestInLimitedRadiusCamera(fileSource, computedType, lat, lon)
+            const nearestCamera = await findNearestInLimitedRadiusCamera(computedType, lat, lon)
 
             if (nearestCamera !== null) {
                 if (nearestCamera.infos[fileSource] === undefined) {
@@ -131,16 +131,16 @@ async function execute({files,sources}) {
                     
                     if (!acc[fileSource])
                         acc[fileSource] = {}
-                    if (!acc[fileSource].aggregateds)
-                        acc[fileSource].aggregateds = {}
-
-                    acc[fileSource].aggregateds[nearestCamera.source] = (acc[fileSource].aggregateds[nearestCamera.source]??0) + 1
-
+                    
+                    acc[fileSource].aggregateds = (acc[fileSource].aggregateds??0) + 1;
                     return acc
                 }
+                
                 if (nearestCamera.infos[fileSource].lat === lat && nearestCamera.infos[fileSource].lon === lon) {
                     return acc;
                 }
+
+
                 const distFromMeAndNear = calcDistanceBetween(lat, lon, nearestCamera.lat, nearestCamera.lon);
                 const distFromAggregatedToNear = calcDistanceBetween(nearestCamera.infos[fileSource].lat, nearestCamera.infos[fileSource].lon, nearestCamera.lat, nearestCamera.lon);
 
@@ -162,6 +162,7 @@ async function execute({files,sources}) {
 
                     if (!acc[fileSource])
                         acc[fileSource] = {}
+
                     acc[fileSource].createds = (acc[fileSource].createds??0) + 1;
 
                     return acc;
@@ -183,6 +184,7 @@ async function execute({files,sources}) {
 
             if (!acc[fileSource])
                 acc[fileSource] = {}
+
             acc[fileSource].createds = (acc[fileSource].createds??0) + 1;
 
             return acc;

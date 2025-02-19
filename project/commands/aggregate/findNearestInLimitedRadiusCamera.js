@@ -19,10 +19,9 @@ function getCoordinatesQueryByRadius(lat, lon, radius) {
 // si private => min radius plus proche private ou unknown
 // si unknown => min radius plus proche de tout type
 // si public ou official => min radius plus proche unknown ou max radius plus proche publique/official
-function getNearCameraQuery(source, type, lat, lon) {
+function getNearCameraQuery(type, lat, lon) {
     if (["public", "official"].includes(type)){
         return {
-            source: {$ne: source},
             $or: [
                 {
                     "infos.type": {$in: ["public", "official"]},
@@ -38,24 +37,20 @@ function getNearCameraQuery(source, type, lat, lon) {
 
     if (type === "private") {
         return {
-            source: {$ne: source},
             "infos.type": ["private", "unknown"],
             ...getCoordinatesQueryByRadius(lat, lon, minRadius)
         }
     }
 
     if (type === "unknown") {
-        return {
-            source: {$ne: source},
-            ...getCoordinatesQueryByRadius(lat, lon, minRadius)
-        }
+        return getCoordinatesQueryByRadius(lat, lon, minRadius)
     }
 
     throw new Error(`Error when searching near camera during aggregation : this type "${type}" is invalid`);
 }
 
-async function findNearestInLimitedRadiusCamera(source, type, lat, lon) {
-    const query = getNearCameraQuery(source, type, lat, lon);
+async function findNearestInLimitedRadiusCamera(type, lat, lon) {
+    const query = getNearCameraQuery(type, lat, lon);
 
     const cameras = await Camera.find(query)
 
