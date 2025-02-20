@@ -10,19 +10,14 @@ const sourcesFilterConfig = {
     umapAngers: {link: "https://umap.openstreetmap.fr/fr/map/publicites-angers_1109346"}
 }
 
-const typesFilterConfig = ["public","private","unknown"];
+const typesFilterConfig = ["official", "public", "private", "unknown"];
 
 let filterSectionPrototype = null;
 let filterLinePrototype = null;
 
 export const filtersState = {
     infosSources: {
-        title: "Filter par source - infos",
-        filtersConfig: sourcesFilterConfig,
-        expanded: false
-    },
-    coordinatesSources: {
-        title: "Filter par source - positions",
+        title: "Filter par sources",
         filtersConfig: sourcesFilterConfig,
         expanded: false
     },
@@ -151,9 +146,32 @@ export function onLegendHeaderClick() {
     const legendItems = document.querySelector(".legend-items");
     const headerArrow = document.querySelector(".legend-header .arrow");
 
-    legendItems.style.display = legendItems.style.display === "block" ? "none" : "block";
-    headerArrow.classList[legendItems.style.display === "block" ? "add" : "remove"]("down");
+    if (legendItems.style.display === "none") {
+        legendItems.style.display = "block"
+        headerArrow.classList.remove("down")
+    } else {
+        legendItems.style.display = "none"
+        headerArrow.classList.add("down")
+    }
 }
+
+let legendItemTimeouts = {};
+export const getOnLegendItemContainerClick = (i) => 
+    function onLegendItemContainerClick() {
+        if (!isMobile) return;
+
+        if (legendItemTimeouts[i]) {
+            clearTimeout(legendItemTimeouts[i])
+        } else {
+            this.classList.add("show-tooltip")
+        }
+    
+        legendItemTimeouts[i] = setTimeout(() => {
+            this.classList.remove("show-tooltip")
+            delete legendItemTimeouts[i]
+        }, 3000)
+    }
+
 
 export function initAndListenFilters(map) {
     filterSectionPrototype = document.querySelector(".filter-section.prototype");

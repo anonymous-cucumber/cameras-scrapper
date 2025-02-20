@@ -316,10 +316,12 @@ h1 {
 }
 
 .legend-items {
-    display: none;
+    display: block;
 }
-
 .legend-item {
+    position: relative;
+}
+.legend-item-container {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -332,4 +334,5 @@ h1 {
 .legend-item p {
     font-size: 12px;
     font-weight: bold;
+    user-select: none;
 }

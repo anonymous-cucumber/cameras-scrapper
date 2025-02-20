@@ -1,12 +1,14 @@
 export default {
     camerci: "Camerci",
     parisPoliceArcgis: "Arcgis Paris Police",
-    sousSurveillanceNet: "Paris Sous Surveillance",
+    sousSurveillanceNet: "Site Sous Surveillance",
     surveillanceUnderSurveillance: "Surveillance Under Surveillance",
+    umapAngers: "Umap Angers",
 
+    official: "Officielle",
     public: "Publique",
     private: "Privée",
-    "": "inconue",
+    unknown: "Inconnue",
 
     lat: "Latitude",
     lon: "Longitude",

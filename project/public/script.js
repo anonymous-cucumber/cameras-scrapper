@@ -1,5 +1,5 @@
 import { searchAndShowCameras, killCamerasSearching, setPopupPrototype } from "./cameras.js";
-import { initAndListenFilters, filtersState, onMobileMenuCloseButton, onMobileMenuOpenButton, onLegendHeaderClick } from "./filters.js";
+import { initAndListenFilters, filtersState, onMobileMenuCloseButton, onMobileMenuOpenButton, onLegendHeaderClick, getOnLegendItemContainerClick } from "./filters.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     setPopupPrototype();
@@ -31,5 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelector(".mobile-menu-burger").addEventListener("click", onMobileMenuOpenButton)
     document.querySelector(".close-mobile-menu-button").addEventListener("click", onMobileMenuCloseButton)
+
     document.querySelector(".legend-header").addEventListener("click", onLegendHeaderClick)
+    Array.from(document.querySelectorAll(".legend-item-container")).map((legendItem, i) => {
+        legendItem.addEventListener("click", getOnLegendItemContainerClick(i))
+    })
 })

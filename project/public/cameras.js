@@ -34,10 +34,16 @@ function stringifyQuery(queryObj) {
 
 function getCameraImage(camera) {
     const {infos: {type}} = camera
+
     if (type === "private")
         return "cctvBlue.png";
+
     if (type === "public")
         return "cctvRed.png";
+    
+    if (type === "official")
+        return "cctvPurple.png"
+
     return "cctvGrey.png"
 }
 

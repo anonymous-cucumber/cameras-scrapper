@@ -174,8 +174,20 @@
         margin-top: 15px;
         display: block;
     }
-    .legend-item {
+    .legend-item-container {
         width: 155px;
         margin: 0 auto;
+    }
+    .legend-item-container.show-tooltip:after {
+        content: attr(title);
+        position: absolute;
+        top: 38px;
+        color: #fff;
+        background-color: #000;
+        border-radius: 7px;
+        padding: 10px;
+        text-align: center;
+        width: fit-content;
+        padding: 10px;
     }
 }

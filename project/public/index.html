@@ -49,20 +49,32 @@
                     <div class="black-background"></div>
                     <div class="legend-header">
                         <span class="legend-title">Légende</span>
-                        <div class="arrow white-arrow"></div>
+                        <div class="arrow white-arrow down"></div>
                     </div>
                     <div class="legend-items">
-                        <div class="legend-item">
-                            <img src="/images/cctvRed.png" />
-                            <p>Caméra publique</p>
+                        <div class="legend-item" style="z-index: 4;">
+                            <div class="legend-item-container" title="Les caméras de la préfecture de police">
+                                <img src="/images/cctvPurple.png" />
+                                <p>Caméra officielle</p>
+                            </div>
                         </div>
-                        <div class="legend-item">
-                            <img src="/images/cctvBlue.png" />
-                            <p>Caméra privée</p>
+                        <div class="legend-item" style="z-index: 3;">
+                            <div class="legend-item-container" title="Les caméras marquées en zone publique">
+                                <img src="/images/cctvRed.png" />
+                                <p>Caméra publique</p>
+                            </div>
                         </div>
-                        <div class="legend-item">
-                            <img src="/images/cctvGrey.png" />
-                            <p>Type inconnue</p>
+                        <div class="legend-item" style="z-index: 2;">
+                            <div class="legend-item-container" title="Les caméras marquées en zone privée">
+                                <img src="/images/cctvBlue.png" />
+                                <p>Caméra privée</p>
+                            </div>
+                        </div>
+                        <div class="legend-item" style="z-index: 1;">
+                            <div class="legend-item-container" title="Les caméras de type inconnu">
+                                <img src="/images/cctvGrey.png" />
+                                <p>Type inconnu</p>
+                            </div>
                         </div>
                     </div>
                 </div>
