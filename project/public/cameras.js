@@ -36,7 +36,7 @@ function getCameraImage(camera) {
     const {infos: {type}} = camera
 
     if (type === "private")
-        return "cctvBlue.png";
+        return "cctvDarkBlue.png";
 
     if (type === "public")
         return "cctvRed.png";
