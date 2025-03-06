@@ -11,3 +11,35 @@ export const showTemporaryMessage = message => {
         container.classList.add("hidden");
     }, 3000)
 }
+
+
+let currentPosition = null;
+export const locateOnMap = map => {
+    if (currentPosition) {
+        map.panTo(new L.LatLng(currentPosition.lat, currentPosition.lng));
+        return;
+    }
+
+    
+
+    let locationMarker = null;
+    map.locate({setView: false, watch: true})
+    .on("locationfound", ({latlng}) => {
+        currentPosition = latlng;
+        
+        if (locationMarker !== null)
+            map.removeLayer(locationMarker);
+        else {
+            map.setView(new L.LatLng(latlng.lat, latlng.lng), 19);
+        }
+
+        locationMarker = new L.Marker(latlng, {
+            icon: new L.Icon({
+                iconUrl: "/images/locate-point.svg",
+                iconSize: [16, 16]
+            })
+        })
+        
+        map.addLayer(locationMarker)
+    })
+}

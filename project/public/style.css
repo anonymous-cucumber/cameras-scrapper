@@ -238,11 +238,12 @@ h1 {
 }
 
 .locate-button {
-    background-image: url("/images/locate-icon.svg");
+    
+    background-image: url("/images/compass-icon.png");
     background-size: 100%;
 
-    left: 135px;
-    top: 10px;
+    right: 10px;
+    top: 60px;
 }
 
 .mobile-menu-burger {

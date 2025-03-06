@@ -1,5 +1,6 @@
 import { searchAndShowCameras, killCamerasSearching, setPopupPrototype } from "./cameras.js";
 import { initAndListenFilters, filtersState, onMobileMenuCloseButton, onMobileMenuOpenButton, onLegendHeaderClick, getOnLegendItemContainerClick } from "./filters.js";
+import { locateOnMap } from "./libs.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     setPopupPrototype();
@@ -37,14 +38,5 @@ document.addEventListener("DOMContentLoaded", () => {
         legendItem.addEventListener("click", getOnLegendItemContainerClick(i))
     })
 
-    document.querySelector(".locate-button").addEventListener("click", () => {
-        map.locate({setView: true, watch: true})
-        // .on("locationfound", () => {
-        //     alert("FOUND")
-        // })
-        .on("locationerror", (e) => {
-            alert("ERROR")
-            alert(e.message)
-        })
-    })
+    document.querySelector(".locate-button").addEventListener("click", () => locateOnMap(map))
 })

@@ -140,7 +140,7 @@
 
     .locate-button {
         top: 178px;
-        left: calc( 100% - 70px - 4px - 10px );
+        right: 10px;
     }
 
     .mobile-menu-burger div {
