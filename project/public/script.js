@@ -36,4 +36,15 @@ document.addEventListener("DOMContentLoaded", () => {
     Array.from(document.querySelectorAll(".legend-item-container")).map((legendItem, i) => {
         legendItem.addEventListener("click", getOnLegendItemContainerClick(i))
     })
+
+    document.querySelector(".locate-button").addEventListener("click", () => {
+        map.locate({setView: true, watch: true})
+        // .on("locationfound", () => {
+        //     alert("FOUND")
+        // })
+        .on("locationerror", (e) => {
+            alert("ERROR")
+            alert(e.message)
+        })
+    })
 })
