@@ -1,6 +1,7 @@
 const {dumpCsvPath} = require("../../paths");
 const fs = require("fs/promises");
 const Camera = require("../../models/Camera");
+const HistoryManager = require("../../managers/HistoryManager");
 const {exportLocalCameras} = require("../../libs/dumpsCameras");
 const { generateHeaderFromModel, generateLinesFromModel } = require("../../libs/csvFormatter");
 const {partSizeValidator} = require("../../libs/validators/commandValidators");
@@ -17,9 +18,14 @@ function example() {
 }
 
 async function execute({partSize}) {
-    const outputFile = `dump_${new Date().toISOString()}.csv`;
+    const date = new Date();
 
     console.log(`Start exporting dump into file '${outputFile}'`);
+
+    await HistoryManager.registerExport(date);
+    
+
+    const outputFile = `dump_${date.toISOString()}.csv`;
 
     await fs.writeFile(dumpCsvPath+outputFile, generateHeaderFromModel(Camera)+"\n");
 

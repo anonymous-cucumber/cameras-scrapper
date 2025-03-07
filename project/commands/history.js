@@ -5,7 +5,7 @@ const {deductDateRange} = require("../libs/datetimeMatching");
 function getArgs() {
     return {
         sources: async (givenSources) => {
-            const allSources = await getAllSources();
+            const allSources = getAllSources();
             if ([undefined,"all"].includes(givenSources)) {
                 return {success: true, data: allSources}
             }

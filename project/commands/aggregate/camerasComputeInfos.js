@@ -44,19 +44,17 @@ const weightByType = {
 }
 function getSourceCamWithStrongestType(infos) {
     return (
-        getAllSources().then(sources =>
-            sources
-            .filter(source => infos[source])
-            .map((source) => [source, getTypeFromSourceAndComputedInfos(source, infos[source])])
-            .reduce(([strongestSource, strongestType], [source, type]) => {
+        getAllSources()
+        .filter(source => infos[source])
+        .map((source) => [source, getTypeFromSourceAndComputedInfos(source, infos[source])])
+        .reduce(([strongestSource, strongestType], [source, type]) => {
         
-                if (strongestType === null || weightByType[type] > weightByType[strongestType])
-                    return [source, type]
+            if (strongestType === null || weightByType[type] > weightByType[strongestType])
+                return [source, type]
         
-                return [strongestSource, strongestType];
+            return [strongestSource, strongestType];
         
-            }, [null, null])
-        )
+        }, [null, null])
     )
 }
 

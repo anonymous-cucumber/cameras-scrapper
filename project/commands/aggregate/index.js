@@ -1,7 +1,7 @@
 const fs = require("fs/promises");
 const lazyReadCsv = require("../../libs/lazyReadCsv");
 const Camera = require("../../models/Camera");
-const ImportHistory = require("../../models/ImportHistory");
+const HistoryManager = require("../../managers/HistoryManager");
 const {question} = require("../../libs/ui");
 const getAllSources = require("../../libs/getAllSources");
 const {scrapCsvPath} = require("../../paths");
@@ -14,7 +14,7 @@ const mergeCameras = require("./mergeCameras");
 function getArgs() {
     return {
         sources: async givenSources => {
-            const allSources = await getAllSources();
+            const allSources = getAllSources();
             if ([undefined,"all"].includes(givenSources)) {
                 return {success: true, data: allSources}
             }
@@ -97,12 +97,7 @@ async function execute({files,sources}) {
         console.log("Importing "+filename+" ...")
         const date = new Date();
 
-        await ImportHistory.create({
-            source: fileSource,
-            scrappingDate: fileDate,
-            scrappingParams: fileAdditionalParams,
-            importDate: date
-        })
+        await HistoryManager.registerAggregation(date, fileSource, fileAdditionalParams, fileDate);
 
         const nbLines = await lazyReadCsv(scrapCsvPath+filename, async (_acc,_obj,i) => {
             return i+1;

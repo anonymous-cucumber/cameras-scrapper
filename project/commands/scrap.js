@@ -1,5 +1,6 @@
 const fs = require("fs/promises");
 const {fileExists} = require("../libs/fsUtils");
+const HistoryManager = require("../managers/HistoryManager");
 const {scrappersPath,scrapCsvPath} = require("../paths");
 
 function getArgs() {
@@ -26,7 +27,10 @@ function example() {
 
 const cols = ["lat","lon",["infos",v => v ? JSON.stringify(v).replace(/;/g,",") : ""]];
 
-async function execute({scrapper,scrapperName,additionalParams}) {
+async function execute({scrapper, scrapperName, additionalParams}) {
+    const date = new Date();
+
+    await HistoryManager.registerScrapping(date, scrapperName, additionalParams)
 
     const lines = await scrapper.scrapper(additionalParams);
 

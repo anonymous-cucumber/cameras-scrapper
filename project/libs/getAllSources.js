@@ -1,16 +1,13 @@
-const fs = require("fs/promises");
+const fs = require("fs");
 const {scrappersPath} = require("../paths");
 
 let sources = null;
 
-async function getAllSources() {
+function getAllSources() {
     if (sources === null) {
-        sources = await fs.readdir(scrappersPath)
-        .then(files => 
-            files
-            .filter(file => file !== ".keep")
-            .map(file => file.replace(".js",""))
-        )
+        sources = fs.readdirSync(scrappersPath)
+                    .filter(file => file !== ".keep")
+                    .map(file => file.replace(".js",""))
     }
     return sources;
 }

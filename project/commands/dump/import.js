@@ -4,6 +4,7 @@ const lazyReadCsv = require("../../libs/lazyReadCsv");
 const { partSizeValidator } = require("../../libs/validators/commandValidators");
 const { dateToDateRangeValidator } = require("../../libs/validators/commandValidators");
 const { postArgsFindDumpFiles } = require("../../libs/commandsPostArgs");
+const HistoryManager = require("../../managers/HistoryManager");
 
 function getArgs() {
     return {
@@ -24,6 +25,12 @@ function example() {
 
 async function execute({file, partSize}) {
     console.log(`Start importing cameras from file '${file}'`)
+
+    const date = new Date();
+    const splittedFilename = file.split(".csv")[0].split("_");
+    const filestrDate = splittedFilename[splittedFilename.length-1];
+    const fileDate = new Date(filestrDate);
+    await HistoryManager.registerImport(date, fileDate)
     
     const total = await lazyReadCsv(dumpCsvPath+file, async (_acc,_obj,i) => {
         return i+1;
