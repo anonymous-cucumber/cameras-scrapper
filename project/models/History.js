@@ -8,13 +8,13 @@ const HistorySchema = new Schema({
     type: {type: String, enum: ["import","export","aggregation","scrapping"], required: true},
     date: {type: Date, required: true},
 
-    source: {type: String, enum: getAllSources(), required: false},
+    source: {type: String, enum: getAllSources()},
 
-    additionalParams: {type: String, required: false},
+    additionalParams: String,
     
-    aggregationFileDate: {type: Date, required: false},
+    aggregationFileDate: Date,
 
-    importFileDate: {Type: Date, required: false}
+    importFileDate: Date
 });
 
 module.exports = db.model('History', HistorySchema);

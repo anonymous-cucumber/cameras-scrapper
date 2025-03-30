@@ -1,7 +1,7 @@
 const fs = require("fs/promises");
 const { dumpCsvPath } = require("../paths");
 
-async function postArgsFindDumpFiles(params) {
+async function postParamsFindDumpFiles(params) {
     const {dateRange: [dateA, dateB]} = params
 
     const files = await fs.readdir(dumpCsvPath).then(files =>
@@ -33,4 +33,4 @@ async function postArgsFindDumpFiles(params) {
     return {success: true, params: {...params, file: files[0].filename}}
 }
 
-module.exports = {postArgsFindDumpFiles}
+module.exports = {postParamsFindDumpFiles}

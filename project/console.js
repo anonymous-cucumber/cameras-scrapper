@@ -20,23 +20,16 @@ async function getCommand(args = process.argv.slice(2), base = `${__dirname}/com
     return getCommand(args, base+command+"/", depth+1)
 }
 
-(async () => {
-    process.dontLog = true;
+async function computeArgs(args, depth, example, params = {}) {
+    const nbAlreadyComputedArgs = Object.keys(params).length;
 
-    const {getArgs, postArgs, example, execute, depth} = await getCommand();
-    
-    const args = getArgs();
-
-    const arrayArgs = Object.entries(args);
-
-    let params = {};
-
+    const arrayArgs = Object.keys(args);
     for (let i=0;i<arrayArgs.length;i++) {
-        const [key,check] = arrayArgs[i];
-        const value = process.argv[i+2+depth];
+        const [key,check] = [arrayArgs[i], args[arrayArgs[i]]];
+        const value = process.argv[2 + depth + nbAlreadyComputedArgs + i];
         const {success, msg, data, params: newParams} = await check(value,params);
         if (!success) {
-            throw new Error(msg+"\n\nExample => "+example())
+            throw new Error(msg+"\n\nExample => "+example(params))
         }
         if (newParams) {
             params = newParams;
@@ -44,10 +37,31 @@ async function getCommand(args = process.argv.slice(2), base = `${__dirname}/com
             params[key] = data??value;
         }
     }
-    if (postArgs) {
-        const {success, msg, params: newParams} = await postArgs(params);
+
+    return params;
+}
+
+(async () => {
+    process.dontLog = true;
+
+    const {getArgs, getOtherConditionnalArgs, postParams, example, execute, depth} = await getCommand();
+
+    let params = await computeArgs(getArgs(), depth, example)
+
+    if (params.help) {
+        console.log(example(params));
+        process.exit();
+    }
+    
+    if (getOtherConditionnalArgs) {
+        const otherConditionnalArgs = getOtherConditionnalArgs(params);
+        params = await computeArgs(otherConditionnalArgs, depth, example, params);
+    }
+
+    if (postParams) {
+        const {success, msg, params: newParams} = await postParams(params);
         if (!success) {
-            throw new Error(msg+"\n\nExample => "+example())
+            throw new Error(msg+"\n\nExample => "+example(params))
         }
         if (newParams) {
             params = newParams;

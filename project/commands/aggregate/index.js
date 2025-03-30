@@ -33,7 +33,7 @@ function getArgs() {
     }
 }
 
-async function postArgs(params) {
+async function postParams(params) {
     const {sources, dateRange: [date, dateB], additionalParams} = params;
 
     const files = await fs.readdir(scrapCsvPath).then(files =>
@@ -189,4 +189,4 @@ async function execute({files,sources}) {
     console.log(acc);
 }
 
-module.exports = {getArgs, example, execute, postArgs}
+module.exports = {getArgs, example, execute, postParams}

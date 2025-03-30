@@ -1,10 +1,37 @@
-const ImportHistory = require("../models/ImportHistory");
 const getAllSources = require("../libs/getAllSources");
-const {deductDateRange} = require("../libs/datetimeMatching");
+const { dateToDateRangeValidator } = require("../libs/validators/commandValidators");
+const History = require("../models/History");
+
+const historyTypes = History.schema.paths.type.enumValues;
 
 function getArgs() {
     return {
-        sources: async (givenSources) => {
+        type: (type) => {
+            type = type?.toLowerCase();
+
+            if (!historyTypes.includes(type)) {
+                return {success: false, msg: `Type can only be : ${historyTypes.join(" | ")}`}
+            }
+
+            return {
+                success: true,
+                data: type
+            }
+        },
+        dateOrHelp: (v, params) => {
+            if (v === "help") {
+                return {success: true, params: {...params, help: true}}
+            }
+            return dateToDateRangeValidator(v)
+        }
+    }
+}
+
+function getOtherConditionnalArgs({type}) {
+    let args = {};
+
+    if (["aggregation","scrapping"].includes(type)) {
+        args.sources = async (givenSources) => {
             const allSources = getAllSources();
             if ([undefined,"all"].includes(givenSources)) {
                 return {success: true, data: allSources}
@@ -16,59 +43,79 @@ function getArgs() {
             }
 
             return {success: true, data: sources};
-        },
-        scrappingDate: (strDate) => {
-            if (strDate === "all")
-                strDate = undefined;
-
-            const dateRange = strDate ? deductDateRange(strDate) : [null,null];
-
-            if (strDate && dateRange === null)
-                return {success: false, msg: `"${strDate}" is not a valid date`};
-
-            return {success: true, data: dateRange}
-        },
-        importDate: (strDate) => {
-            if (strDate === "all")
-                strDate = undefined;
-
-            const dateRange = strDate ? deductDateRange(strDate) : [null,null];
-
-            if (strDate && dateRange === null)
-                return {success: false, msg: `"${strDate}" is not a valid date`};
-
-            return {success: true, data: dateRange}
-        },
-        scrappingParams: async (additionalParams) => {
-            return {success: true, data: additionalParams}
         }
+        args.additionalParams = (additionalParams) => ({success: true, data: additionalParams});
     }
+
+    if (["aggregation", "import"]) {
+        args.fileDate = dateToDateRangeValidator;
+    }
+
+    return args;
 }
 
-function example() {
-    return "\nnode console.js history <sources> <scrappingDate> <importDate> <scrappingParams>";
+function example({type}) {
+    switch (type) {
+        case "aggregation":
+            return [
+                "\nnode console.js history aggregation <date> <sources> <zone> <filedate>",
+
+                "\nGet aggregations history of camerci during April 2025 :",
+                "> node console.js history aggregation 2025-04 camerci",
+
+                "\nGet aggregations history of surveillanceUnderSurveillance, at all dates, on paris :",
+                "> node console.js history aggregation all surveillanceUnderSurveillance paris",
+
+                "\nGet aggregations history of surveillanceUnderSurveillance, whatever the zone, but from scrapping file created during the 12 december 2024 :",
+                "> node console.js history aggregation all surveillanceUnderSurveillance all 2024-12-12",
+
+                "\nGet aggregations history of all sources during April 2025, with no mentionned zone :",
+                "> node console.js history aggregation 2025-04 all nothing"
+            ].join("\n")
+
+        case "scrapping":
+            return [
+                "\nnode console.js history scrapping <date> <sources> <zone>",
+
+                "\nGet scrapping history during April 2025 of surveillanceUnderSurveillance, in france",
+                "> node console.js history scrapping 2025-04 surveillanceUnderSurveillance france",
+
+                "\nGet all scrapping history of camerci",
+                "> node console.js history scrapping all camerci",
+
+                "\nGet all scrapping history of all source, with no specified zone",
+                "> node console.js history scrapping all all nothing"
+            ].join("\n")
+
+        case "import":
+            return [
+                "\nnode console.js history import <date> <filedate>",
+
+                "\nGet import history during 15 january of 2025 :",
+                "> node console.js history import 2025-01-15",
+
+                "\nGet import history of all dates, but from dump file previously generated during 2024 :",
+                "> node console.js history import all 2024"
+            ].join("\n")
+
+        case "export":
+            return [
+                "\nnode console.js history export <date>",
+
+                "\nGet export history during 15 january of 2025 :",
+                "> node console.js history export 2025-01-15",
+
+                "\nGet all export history :",
+                "> node console.js history export"
+            ].join("\n")
+    }
+    return "";
 }
 
-async function execute({sources,scrappingDate,importDate,scrappingParams}) {
+async function execute(params) {
 
-    const items = await ImportHistory.find({
-        ...(sources !== "all" ? {source : {$in: sources}} : {}),
-        ...(scrappingDate[0] !== null ? {scrappingDate: {$gte: scrappingDate[0], $lte: scrappingDate[1]}} : {}),
-        ...(importDate[0] !== null ? {importDate: {$gte: importDate[0], $lte: importDate[1]}} : {}),
-        ...(scrappingParams ? {scrappingParams: scrappingParams === "nothing" ? {$exists: false} : scrappingParams} : {})
-    });
-
-    console.log("Imports history :");
-    if (items.length === 0) {
-        console.log("\tnothing");
-        return;
-    }
-    console.log(
-        items.map(({source, scrappingDate, scrappingParams, importDate}) => 
-            `\t- ${source}${scrappingParams ? "_"+scrappingParams : ""}_${scrappingDate.toISOString()}.csv imported at ${importDate.toISOString()}`
-        ).join("\n")
-    )
+    console.log(params)
     
 }
 
-module.exports = {getArgs,example,execute}
+module.exports = {getArgs, getOtherConditionnalArgs, example, execute}

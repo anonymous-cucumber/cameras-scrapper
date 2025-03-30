@@ -3,7 +3,7 @@ const { dumpCsvPath } = require("../../paths");
 const lazyReadCsv = require("../../libs/lazyReadCsv");
 const { partSizeValidator } = require("../../libs/validators/commandValidators");
 const { dateToDateRangeValidator } = require("../../libs/validators/commandValidators");
-const { postArgsFindDumpFiles } = require("../../libs/commandsPostArgs");
+const { postParamsFindDumpFiles } = require("../../libs/commandsPostParams");
 const HistoryManager = require("../../managers/HistoryManager");
 
 function getArgs() {
@@ -13,8 +13,8 @@ function getArgs() {
     }
 }
 
-async function postArgs(params) {
-    return postArgsFindDumpFiles(params)
+async function postParams(params) {
+    return postParamsFindDumpFiles(params)
 }
 
 function example() {
@@ -71,4 +71,4 @@ async function execute({file, partSize}) {
 }
 
 
-module.exports = {getArgs, example, execute, postArgs};
+module.exports = {getArgs, example, execute, postParams};
