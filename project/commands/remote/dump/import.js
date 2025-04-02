@@ -18,9 +18,9 @@ async function postArgs(params) {
 }
 
 function example() {
-    return  "\nnode console.js dump import [date_search] [part_size]"+
-            "\nnode console.js dump import 2024-06-12"+
-            "\nnode console.js dump import 2024-06-12 500"
+    return  "\nnode console.js remote dump import [file_date] [part_size]"+
+            "\nnode console.js remote dump import 2024-06-12"+
+            "\nnode console.js remote dump import 2024-06-12 500"
 }
 
 async function execute({file, partSize}) {

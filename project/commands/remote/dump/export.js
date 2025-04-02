@@ -12,8 +12,8 @@ function getArgs() {
 }
 
 function example() {
-    return  "\nnode console.js dump export [part_size]"+
-            "\nnode console.js dump export 5000"
+    return  "\nnode console.js remote dump export [part_size]"+
+            "\nnode console.js remote dump export 5000"
 }
 
 async function execute({partSize}) {
