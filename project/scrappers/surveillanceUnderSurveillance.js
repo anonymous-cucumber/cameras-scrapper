@@ -8,7 +8,7 @@ const bboxes = {
     paris: [2.258395, 48.815729, 2.415771, 48.901457]
 };
 
-const searchsSize = {horizontal: 0.25, vertical: 0.25} // Exprimed in degrees
+const searchsSize = {horizontal: 0.125, vertical: 0.125} // Exprimed in degrees
 
 const getUrl = (lat1, lon1, lat2, lon2) => 
     `https://sunders.uber.space/camera.php?bbox=${lon1},${lat1},${lon2},${lat2}&zoom=16&width=1848&height=539`
