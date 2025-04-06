@@ -1,12 +1,15 @@
 # CameraScrapper
 
-This project is a scrapper, to store and aggregate all camera informations we can find, from different sources :  
-  - "camerci" (public and "official" site) : https://camerci.fr
-  - The "parisPoliceArcgis" source for Paris police prefecture (public and "official" site) : https://arcg.is/08y0y10
-  - The "sousSurveillanceNet" source (free filled by users) : https://www.sous-surveillance.net
-  - The "surveillanceUnderSurveillance" project (free filled by users, through Open Street Map) : https://sunders.uber.space
-  - The "allOverpassOsm" source scrap cameras from Open Street Map, using overpass (an OSM query system), it returns same cameras as "SurveillanceUnderSurveillance", but it's slower.
-  - The "umapAngers" is an umap instance which mention cameras in Angers in France (filled by users) : https://umap.openstreetmap.fr/fr/map/publicites-angers_1109346#12/47.4563/-0.5581
+This project is a scrapper, to store and aggregate all camera informations we can find, from different sources.
+It is also a website who serve stored cameras on an interactive map.
+
+The different sources are :
+  - **camerci**, public and "official" site : https://camerci.fr
+  - **parisPoliceArcgis**, for Paris police prefecture, public and "official" site : https://arcg.is/08y0y10
+  - **sousSurveillanceNet**, free filled by users : https://www.sous-surveillance.net
+  - **surveillanceUnderSurveillance**, free filled by users, through Open Street Map : https://sunders.uber.space
+  - **allOverpassOsm**, scrap cameras from Open Street Map, using overpass (an OSM query system). It returns same cameras as **SurveillanceUnderSurveillance**, but it's slower.
+  - **umapAngers**, it is an umap instance which mention cameras in Angers in France (filled by users) : https://umap.openstreetmap.fr/fr/map/publicites-angers_1109346#12/47.4563/-0.5581
 
 ## How to use
 
@@ -32,7 +35,7 @@ You can now run the commands described below in the "How it works" section, and 
 
 ## Goals
 
-The goal of this project is to centralize as many surveillance cameras positions as possible, in an autonom database.  
+The goal of this project is to centralize as many surveillance cameras positions as possible, in an autonomous database.  
 Theses centralized cameras positions are served on a map, on a little website, which can be easily hosted, deployed, and redeployed if necessary.
 
 ## Why ?
@@ -42,7 +45,7 @@ Theses centralized cameras positions are served on a map, on a little website, w
 At first, we want to centralize surveillance cameras positions to have a more reliable and complete cameras positions database, to better anticipate them on the ground.
 
 At this time, several sites exist, to localize many surveillance cameras.  
-Some sites are filled by authorities, with only "official" public cameras, other sites are free filled by users on internet, from cameras they see in the street.  
+Some sites are filled by authorities, with only "official" public cameras, and other sites are free filled by users on internet, from cameras they see in the street.  
 
 Some cameras are present on some sites, but not on other. Official public cameras sites don't show other cameras. Free filled cameras sites don't have all existing cameras, because of users who fill are not perfect.  
 
@@ -52,7 +55,7 @@ By centralizing these uncomplete cameras databases, we have a more complete and 
 
 All of these existing cameras websites are hosted by other than us, with no possibility to redeploy them by ourself.  
 If websites are down, closed by autorithies, or simply not accessible, we will have no longer access to cameras positions.  
-With camera scrapper,  with have a tool, easily redeployable, and with easy hostable cameras database.  
+With camera scrapper, we have an autonomous tool, easily redeployable, and easy hostable cameras database.  
 
 ## How it works
 
@@ -67,10 +70,10 @@ The command to do that :
 ```
 docker-compose exec project node console.js scrap <source> [additionnal params]
 ```
-**< source >** : Mandatory, which source we want to scrap. Existing sources are enumerated at the beginning of this file
+**< source >** : Mandatory, what source we want to scrap. Existing sources are enumerated at the beginning of this file.
 **[additional params]** : Optionnal, it's a simple string. This params is only mandatory for 'surveillanceUnderSurveillance' to specify what zone to scrap.
 
-All scrapped datas are stored in the project/CSVs_scraps/ folder
+All scrapped datas are stored in the `project/CSVs_scraps/` folder
 
 #### Aggregating
 
@@ -89,7 +92,7 @@ docker-compose exec project node console.js aggregate [sources] [datetime] [addi
 #### Dumping
 
 We can export and import database dumps, through CSV files.  
-All dumps are stored in the folder project/CSVs_dumps/  
+All dumps are stored in the folder `project/CSVs_dumps/`  
 
 **To export** database dump to a CSV file, type this command :
 ```
@@ -102,8 +105,8 @@ docker-compose exec project node console.js dump export [part_size]
 ```
 docker-compose exec project node console.js dump import [file_date] [part_size]
 ```
-**[file_date]** : If there is only one file in filer, this file will be imported. If there is many files, you have to type a piece of date or datetime, to select file to import.  
-**[part_size]** : How many cameras to import simultaneously
+**[file_date]** : If there is only one file in folder, this file will be imported. If there is many files, you have to type a piece of date or datetime, to select file to import.  
+**[part_size]** : How many cameras to import simultaneously. Default value: 50  
 
 #### Remote dumping
 
@@ -114,7 +117,7 @@ It works like normal export and import, but with API calls between local and a r
 ```
 docker-compose exec project node console.js remote dump export [part_size]
 ```
-**[part_size]** : The part size is an optionnal argument, that specify how many cameras export by part. By default, command export cameras asynchronously, by packets of 10 000. Default value: 10_000  
+**[part_size]** : The part size is an optionnal argument, that specify how many cameras export by part. By default, command export cameras asynchronously, by packets of 1000. Default value: 1000  
 
 
 **To import** database remote dump from a local CSV file, type this command :
@@ -122,7 +125,7 @@ docker-compose exec project node console.js remote dump export [part_size]
 docker-compose exec project node console.js remote dump import [file_date] [part_size]
 ```
 **[file_date]** : If there is only one file in folder, this file will be imported. If there is many files, you have to type a piece of date or datetime, to select file to import.  
-**[part_size]** : How many cameras to import simultaneously  
+**[part_size]** : How many cameras to import simultaneously. Default value: 50  
 
 Of course, these commands have to be executed from your local instance.  
 
@@ -138,7 +141,7 @@ CLIENT_SIDE_ADMIN_API_TOKEN=<Your admin API key>
 
 **In your remote .env file (on the remote server)** :
 ```
-SERVER_SIDE_ADMIN_API_TOKEN=abcd=<Your admin API key>
+SERVER_SIDE_ADMIN_API_TOKEN=<Your admin API key>
 ```
 
 #### Wipe cameras
