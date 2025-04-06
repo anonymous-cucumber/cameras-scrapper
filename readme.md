@@ -1,6 +1,6 @@
 # CameraScrapper
 
-This project is a scrapper, to store and aggregate all camera informations we can find, from different sources.
+This project is a scrapper, to store and aggregate all camera informations we can find, from different sources.  
 It is also a website who serve stored cameras on an interactive map.
 
 The different sources are :
@@ -47,7 +47,8 @@ At first, we want to centralize surveillance cameras positions to have a more re
 At this time, several sites exist, to localize many surveillance cameras.  
 Some sites are filled by authorities, with only "official" public cameras, and other sites are free filled by users on internet, from cameras they see in the street.  
 
-Some cameras are present on some sites, but not on other. Official public cameras sites don't show other cameras. Free filled cameras sites don't have all existing cameras, because of users who fill are not perfect.  
+Some cameras are present on some sites, but not on other. Official public cameras sites don't show non-official cameras.  
+Free filled cameras sites don't have all existing cameras, because of users who fill are not perfect.  
 
 By centralizing these uncomplete cameras databases, we have a more complete and reliable cameras database to better anticipate them.
 
@@ -70,7 +71,7 @@ The command to do that :
 ```
 docker-compose exec project node console.js scrap <source> [additionnal params]
 ```
-**< source >** : Mandatory, what source we want to scrap. Existing sources are enumerated at the beginning of this file.
+**< source >** : Mandatory, what source we want to scrap. Existing sources are enumerated at the beginning of this file.  
 **[additional params]** : Optionnal, it's a simple string. This params is only mandatory for 'surveillanceUnderSurveillance' to specify what zone to scrap.
 
 All scrapped datas are stored in the `project/CSVs_scraps/` folder
