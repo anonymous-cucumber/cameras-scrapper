@@ -8,7 +8,9 @@ function getHorizontalSearchBBoxes(searchCoordinates, horizontalInfos, verticalZ
     const bboxes = [];
 
     let searchLon2 = searchLon1+horizontalStartModulo;
-    bboxes.push({lat1: searchLat1, lon1: searchLon1, lat2: searchLat2, lon2: searchLon2, zoneId: verticalZoneId+"-"+horizontalFirstZoneId});
+    if (horizontalStartModulo > 0) {
+        bboxes.push({lat1: searchLat1, lon1: searchLon1, lat2: searchLat2, lon2: searchLon2, zoneId: verticalZoneId+"-"+horizontalFirstZoneId});
+    }
 
     searchLon1 = searchLon2;
     for (let j=0;j<horizontalNbSearchs;j++) {
@@ -73,14 +75,16 @@ function getSearchBBoxes([lat1,lon1,lat2,lon2], verticalPartSize, horizontalPart
         searchLon1: lon1,
         searchLat2: lat1+verticalStartModulo
     }
-    bboxes = bboxes.concat(
-        getHorizontalSearchBBoxes(
-            searchCoordinates,
-            horizontalInfos,
-            roundedNbVerticalPartSizeFrom0,
-            bboxToExclude
-        )
-    );
+    if (verticalStartModulo > 0) {
+        bboxes = bboxes.concat(
+            getHorizontalSearchBBoxes(
+                searchCoordinates,
+                horizontalInfos,
+                roundedNbVerticalPartSizeFrom0,
+                bboxToExclude
+            )
+        );
+    }
 
     searchCoordinates.searchLat1 = searchCoordinates.searchLat2;
     for (let i=0;i<verticalNbSearchs;i++) {
