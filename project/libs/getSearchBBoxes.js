@@ -36,7 +36,7 @@ function getHorizontalSearchBBoxes(searchCoordinates, horizontalInfos, verticalZ
 
     return bboxes;
 }
-function getSearchBBoxes([lon1,lat1,lon2,lat2], verticalPartSize, horizontalPartSize, bboxToExclude = null) {
+function getSearchBBoxes([lat1,lon1,lat2,lon2], verticalPartSize, horizontalPartSize, bboxToExclude = null) {
 
     const nbVerticalPartSizeFrom0 = lat1/verticalPartSize;
     const roundedNbVerticalPartSizeFrom0 = nbVerticalPartSizeFrom0%1 == 0 ? nbVerticalPartSizeFrom0 : Math.floor(nbVerticalPartSizeFrom0)+1;

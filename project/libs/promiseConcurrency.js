@@ -1,8 +1,8 @@
 async function promiseConcurrency(promises, concurrency, betweenCallback = null) {
-    concurrency = parseInt(concurrency);
+    const parsedConcurrency = parseInt(concurrency);
 
-    lists = promises.reduce((acc,promise) => 
-        acc[acc.length-1]?.length < concurrency ?
+    const lists = promises.reduce((acc,promise) => 
+        acc[acc.length-1]?.length < parsedConcurrency ?
             acc.slice(0,-1).concat([(acc[acc.length-1]??[]).concat([promise])]) :
             acc.concat([[promise]])
     , [])

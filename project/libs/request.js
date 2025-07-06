@@ -1,10 +1,11 @@
 const http = require("http");
 const https = require("https");
+const RequestTimeout = require("./exceptions/RequestTimeout");
 
-function request(fullUrl, params) {
-    return new Promise(resolve => {
-        const protos = {https,http};
+const protos = {https,http};
 
+function request(fullUrl, params = {}) {
+    return new Promise((resolve, reject) => {
         const [proto, url] = fullUrl.split("://");
 
         const [host, port] = url.split("/")[0].split(":")
@@ -13,7 +14,17 @@ function request(fullUrl, params) {
 
         const protoLib = protos[proto ?? "http"];
 
-        params = { ...params, host, port, path };
+        const controller = new AbortController();
+        const signal = controller.signal;
+
+        params = { 
+            ...params,
+            signal,
+            timeout: params.timeout ?? 5000,
+            host, 
+            port, 
+            path 
+        };
         const req = protoLib.request(params, res => {
             let data = [];
             res.on("data", chunk => data.push(chunk));
@@ -34,6 +45,12 @@ function request(fullUrl, params) {
         });
         if (params.body)
             req.write(params.body);
+
+        req.on("timeout", () => {
+            controller.abort();
+            reject(new RequestTimeout(params.timeout));
+        })
+
         req.end();
     });
 }
