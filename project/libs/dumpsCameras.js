@@ -71,7 +71,8 @@ async function importRemoteCameras(cameras) {
             'content-type': 'application/json'
         },
         method: "POST",
-        body: JSON.stringify(cameras)
+        body: JSON.stringify(cameras),
+        timeout: 10_000
     });
 
     if (code === 401)
