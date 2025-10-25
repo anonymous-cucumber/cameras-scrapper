@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Camera = require("../models/Camera");
-const parseQueries = require("../libs/parseQueries");
+const validateQueries = require("../libs/validateQueries");
 const { searchCameras } = require("../libs/camerasSearcher");
 
 router.get("/:id", async (req, res) => {
@@ -24,7 +24,7 @@ router.get("/:id", async (req, res) => {
 });
 
 router.get("/", async (req,res) => {
-    const parsedQueries = await parseQueries(req.query,"getCameras");
+    const parsedQueries = await validateQueries(req.query,"getCameras");
     if (parsedQueries === null)
         return res.sendStatus(400);
 

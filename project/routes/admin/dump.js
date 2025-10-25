@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const parseQueries = require("../../libs/parseQueries");
+const validateQueries = require("../../libs/validateQueries");
 const Camera = require("../../models/Camera");
 
 router.get("/total", (req, res) => Camera.countDocuments().then(total => res.json({total})))
 
 router.get("/export", async (req, res) => {
-    const parsedQueries = await parseQueries(req.query,"exportCameras");
+    const parsedQueries = await validateQueries(req.query,"exportCameras");
     if (parsedQueries === null)
         return res.sendStatus(400);
 

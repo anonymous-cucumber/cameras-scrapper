@@ -1,5 +1,6 @@
 const http = require("http");
 const https = require("https");
+const stringifyQuery = require("./stringifyQuery");
 const RequestTimeout = require("./exceptions/RequestTimeout");
 
 const protos = {https,http};
@@ -7,10 +8,11 @@ const protos = {https,http};
 function request(fullUrl, params = {}) {
     return new Promise((resolve, reject) => {
         const [proto, url] = fullUrl.split("://");
+        
+        const [host, port] = url.split("/")[0].split(":");
 
-        const [host, port] = url.split("/")[0].split(":")
-        const path = "/"+url.split("/").slice(1).join("/")
-
+        const queryString = stringifyQuery(params.queryParams ?? {});
+        const path = "/"+url.split("/").slice(1).join("/")+queryString;
 
         const protoLib = protos[proto ?? "http"];
 
