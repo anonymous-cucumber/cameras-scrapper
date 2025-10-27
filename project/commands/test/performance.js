@@ -1,41 +1,55 @@
+const fs = require("fs/promises")
 const {fileExists} = require("../../libs/fsUtils");
 const {question} = require("../../libs/ui");
-const fs = require("fs/promises");
+const replaceAll = require("../../libs/replaceAll");
+const {testsPerformanceCSVsPath, performanceTestsBase} = require("../../paths");
 
-const testsBase = process.mainModule.path+"/tests/performance/"
 
 function getArgs() {
     return {
         testPath: async (testPath) => {
-            if (await fileExists(testsBase+testPath))
-                return {success: true, params: {allTests: require(testsBase+testPath)}}
-            if (await fileExists(testsBase+testPath+".js"))
-                return {success: true, params: {allTests: require(testsBase+testPath+".js")}}
+            if (testPath === undefined)
+                return {success: false, msg: "You have to mention a path for your tests"};
+
+            const testsFilePath = `${performanceTestsBase}${testPath}/tests.js`;
+            if (await fileExists(testsFilePath))
+                return {success: true, params: {testPath, tests: require(testsFilePath)}}
 
             return {success: false, msg: `Test path '${testPath}' not found`};
         },
-        tests: async (testNames, {allTests}) => {
-            if (testNames === undefined) return {success: true, params: {tests: allTests}};
+        config: async (configName, params) => {
+            const {testPath} = params;
+            if (configName === undefined) return {success: true};
 
-            const tests = {};
-            for (const testName of testNames.split(",")) {
-                if (allTests[testName] == undefined)
-                    return {success: false, msg: `Given test name ${testName} does not exist`};
-                tests[testName] = allTests[testName];
+            const configFilePath = `${performanceTestsBase}${testPath}/${configName}.json`
+            if (!(await fileExists(configFilePath)))
+                return {success: false, msg: `Config file ${configName}.json not found in path ${testPath}`}
+
+            const content = await fs.readFile(configFilePath).then(chk => chk.toString());
+
+            try {
+                return {success: true, params: {...params, configName, config: JSON.parse(content)}}
+            } catch(e) {
+                return {success: false, msg: "Fail when trying to compile config file"}
             }
-            return {success: true, params: {tests}};
-        },
+        }
     }
 }
 
 function example() {
     return (
-        "\nnode console.js test performance api/camerasSearching"+
-        "\nnode console.js test performance api/camerasSearching getDefaultFranceBbox,getParisCenterBbox"
+        "\nnode console.js test performance <testsPath> [config]"+
+        "\nnode console.js test performance api/camerasSearching local"+
+        "\nnode console.js test performance hello_world"
     );
 }
 
-async function execute({tests}) {
+async function execute({testPath, tests, config, configName}) {
+    if (config) {
+        console.log("config :")
+        console.log(Object.keys(config).map(k => `\t${k}: ${config[k]}`).join("\n"))
+        console.log("")
+    }
     console.log("You are about to execute and store results of following tests:")
     console.log(Object.keys(tests).map(testName => "\t"+testName).join("\n"))
 
@@ -44,7 +58,28 @@ async function execute({tests}) {
         console.log("no")
         return;
     }
-    console.log("Command does not yet exists, good bye")
+
+    console.log("")
+    
+    const header = "Test name;Response";
+    const lines = [];
+
+    const testsKeys = Object.keys(tests);
+    for (let i=0;i<testsKeys.length;i++) {
+        const testKey = testsKeys[i];
+        console.log(`Executing ${testKey} (${i+1}/${testsKeys.length}) ...`)
+        const response = await tests[testKey](config ?? {});
+        lines.push(`${testKey};${response}`);
+    }
+    
+    const csv = header+"\n"+lines.join("\n");
+
+    const formattedTestPath = replaceAll(testPath, "/", "-");
+    const csvPath = `${testsPerformanceCSVsPath}${formattedTestPath}${configName ? "_"+configName : ""}_${new Date().toISOString()}.csv`
+
+    await fs.writeFile(csvPath, csv);
+
+    console.log(`\n${csvPath} saved`)
 }
 
 module.exports = {getArgs,example,execute}

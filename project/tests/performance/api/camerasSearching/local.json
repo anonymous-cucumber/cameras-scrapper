@@ -1,0 +1,4 @@
+{
+    "timeout": 10000,
+    "endpoint": "http://localhost:8000"
+}

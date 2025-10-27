@@ -1,5 +1,5 @@
 const {createReadStream} = require("fs");
-const { generateObjFromCsvLine } = require("./csvFormatter");
+const { generateObjFromCsvLine } = require("./csvParser");
 
 
 function lazyReadCsv(path, callback, params = {}) {
