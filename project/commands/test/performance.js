@@ -32,7 +32,8 @@ function getArgs() {
             } catch(e) {
                 return {success: false, msg: "Fail when trying to compile config file"}
             }
-        }
+        },
+        name: (name) => ({success: true, data: name})
     }
 }
 
@@ -44,7 +45,10 @@ function example() {
     );
 }
 
-async function execute({testPath, tests, config, configName}) {
+async function execute({testPath, tests, config, configName, name}) {
+    if (name) {
+        console.log(`Test name : ${name}`)
+    }
     if (config) {
         console.log("config :")
         console.log(Object.keys(config).map(k => `\t${k}: ${config[k]}`).join("\n"))
@@ -75,7 +79,7 @@ async function execute({testPath, tests, config, configName}) {
     const csv = header+"\n"+lines.join("\n");
 
     const formattedTestPath = replaceAll(testPath, "/", "-");
-    const csvPath = `${testsPerformanceCSVsPath}${formattedTestPath}${configName ? "_"+configName : ""}_${new Date().toISOString()}.csv`
+    const csvPath = `${testsPerformanceCSVsPath}${formattedTestPath}${configName ? "_"+configName : ""}${name ? "_"+name : ""}_${new Date().toISOString()}.csv`
 
     await fs.writeFile(csvPath, csv);
 

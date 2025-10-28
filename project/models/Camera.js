@@ -92,4 +92,11 @@ const CameraSchema = new Schema({
     })
 });
 
+CameraSchema.index({ 
+    lat: 1, 
+    lon: 1, 
+    source: 1,
+    "infos.type": 1
+});
+
 module.exports = db.model('Camera', CameraSchema);
