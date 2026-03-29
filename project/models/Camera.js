@@ -88,6 +88,18 @@ const CameraSchema = new Schema({
             lon: {type: Number, required: true}
         }),
 
+        umapChambery: new Schema({
+            addedAt: {type: Date, required: true},
+            scrappedAt: {type: Date, required: true},
+
+            name: {type: String, required: false},
+            description: {type: String, required: false},
+            type: {type: String, required: false},
+
+            lat: {type: Number, required: true},
+            lon: {type: Number, required: true}
+        }),
+
         type: {type: String, enum: ["official","public","private","unknown"], required: false}
     })
 });

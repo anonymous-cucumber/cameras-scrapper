@@ -18,7 +18,7 @@ function getDataItem(viewerHost, id) {
 
 async function scrapArcgis(url) {
     const viewerUrl = url.split("/")[2] === "arcg.is" ?
-        await request(url, {getHeaders: true}).then(({headers: {location}}) => location) :
+        await request(url, {getHeaders: true, timeout: 10_000}).then(({headers: {location}}) => location) :
         url
     const viewerHost = viewerUrl.split("/").slice(0,3).join("/")
     

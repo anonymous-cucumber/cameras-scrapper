@@ -29,9 +29,10 @@ function getTypeFromSourceAndComputedInfos(source, computedInfos) {
         case "surveillanceUnderSurveillance":
         case "allOverpassOsm":
             return getTypeFromSurveillanceUnderSurveillance(computedInfos)
-
         case "umapAngers":
             return "unknown";
+        case "umapChambery":
+            return computedInfos.type
     }
     throw new Error(`Invalid source type on cameras aggregation : "${source}"`)
 }
@@ -120,6 +121,15 @@ function getComputedInfosBySource(source, infos, lat, lon) {
         case "umapAngers":
             return {
                 name: infos.name,
+                lat,
+                lon
+            }
+
+        case "umapChambery":
+            return {
+                name: infos.name,
+                description: infos.description,
+                type: infos.type,
                 lat,
                 lon
             }

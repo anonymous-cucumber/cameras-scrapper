@@ -7,7 +7,8 @@ const sourcesFilterConfig = {
     parisPoliceArcgis: {link: "https://arcg.is/08y0y10"},
     sousSurveillanceNet: {link: "https://www.sous-surveillance.net"},
     surveillanceUnderSurveillance: {link: "https://sunders.uber.space"},
-    umapAngers: {link: "https://umap.openstreetmap.fr/fr/map/publicites-angers_1109346"}
+    umapAngers: {link: "https://umap.openstreetmap.fr/fr/map/publicites-angers_1109346"},
+    umapChambery: {link: "https://umap.openstreetmap.fr/fr/map/lesyeuxdechambery_985787"}
 }
 
 const typesFilterConfig = ["official", "public", "private", "unknown"];
