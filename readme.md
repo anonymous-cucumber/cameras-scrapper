@@ -10,6 +10,7 @@ The different sources are :
   - **surveillanceUnderSurveillance**, free filled by users, through Open Street Map : https://sunders.uber.space
   - **allOverpassOsm**, scrap cameras from Open Street Map, using overpass (an OSM query system). It returns same cameras as **SurveillanceUnderSurveillance**, but it's slower.
   - **umapAngers**, it is an umap instance which mention cameras in Angers in France (filled by users) : https://umap.openstreetmap.fr/fr/map/publicites-angers_1109346#12/47.4563/-0.5581
+  - **umapChambery**, it is an umap instance which mention cameras in Chambery in France (filled by users) : https://umap.openstreetmap.fr/fr/map/lesyeuxdechambery_985787
 
 
 "scrapped" or "exported" cameras from existing sites, and cameras dumps aggregateds by Cameras Scrapper, are availables in [this repo](https://github.com/anonymous-cucumber/cameras-csvs).
